@@ -26,5 +26,19 @@
 
 
 
+ // Container for the user submethods
+ handlers._users = {};
+
+ // Helper to pick submethod from user handler
+
+ handlers.user = (( data , callback) => {
+    const acceptableMethods = ['post', 'get', 'delete', 'put'];
+    if(acceptableMethods.includes(data.method)) return handlers._users[data.method](data, callback);
+    callback(405);
+ });
+
+
+   
+
 
  module.exports = handlers;

@@ -14,11 +14,29 @@
  const url = require('url');
  const stringDecoder = require('string_decoder').StringDecoder;
  const config = require('./config');
- const handlers = require('./handler')
+ const handlers = require('./handler');
+ const helpers = require('./helpers');
+ const _data = require('./data');
 
 
  // Declare server
  const server = {};
+
+
+ // TESTING
+ //@TODO delete this 
+
+ _data.create('test', 'newFile', {'foo': 'bar'}, function(err){
+     console.log('this was the error', err);
+ });
+
+ _data.read('test', 'newFile', function(err, data){
+     console.log('this was the error', err, 'and this is the data', data);
+ });
+
+//  _data.update('test', 'newFile', {'fizz': 'buzz'}, function(err){
+//      console.log('this was the error', err);
+//  });
 
 
  // Keys for the HTTPS key
@@ -84,7 +102,7 @@
             queryStringObject,
             method,
             headers,
-            payload: buffer
+            payload: helpers.parseJsonToObject(buffer)
         }
 
         chosenHandler(data, (statusCode, payload) => {
@@ -112,7 +130,7 @@
 
 
  // Define a server router
- server.router ={
+ server.router = { 
      users : handlers.users
  }
 
