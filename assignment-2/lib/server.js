@@ -22,23 +22,6 @@
  // Declare server
  const server = {};
 
-
- // TESTING
- //@TODO delete this 
-
- _data.create('test', 'newFile', {'foo': 'bar'}, function(err){
-     console.log('this was the error', err);
- });
-
- _data.read('test', 'newFile', function(err, data){
-     console.log('this was the error', err, 'and this is the data', data);
- });
-
-//  _data.update('test', 'newFile', {'fizz': 'buzz'}, function(err){
-//      console.log('this was the error', err);
-//  });
-
-
  // Keys for the HTTPS key
  server.httpsServerOptions = {
      key: fs.readFileSync(path.join(__dirname,'./../https/key.pem')),
@@ -63,14 +46,14 @@
 
     // Get the URL and parse
     const parsedUrl = url.parse(req.url, true);
-
+   
     // Get the pathname 
     const path = parsedUrl.pathname;
     const trimmedPath = path.replace(/^\/+|\/+$/g, '');
-
+    
     // Obtain the query string 
-    const queryStringObject = parsedUrl.queryString;
-
+    const queryStringObject = parsedUrl.query;
+   
     // Get the method 
     const method = req.method.toLowerCase();
 
@@ -78,7 +61,7 @@
     const headers = req.headers;
 
     // Obtain the payload if there is any 
-    const decoder = new stringDecoder('uft8');
+    const decoder = new stringDecoder('utf-8');
 
     let buffer = '';
 
@@ -93,9 +76,8 @@
 
 
         // Choose the handler in which the request should go to
-
-        const chosenHandler = typeof(server.router[trimmedPath]) !== 'undefined' ? server.router[trimmendPath] : handlers.notFound;
-
+        const chosenHandler = typeof(server.router[trimmedPath]) !== 'undefined' ? server.router[trimmedPath] : handlers.notFound;
+        
         // construct the data object that needs to go to th data handler
         const data = {
             trimmedPath,
@@ -103,8 +85,9 @@
             method,
             headers,
             payload: helpers.parseJsonToObject(buffer)
+            //payload: buffer 
         }
-
+        
         chosenHandler(data, (statusCode, payload) => {
 
             // Call the statuscode from the handler or default to 200
@@ -117,7 +100,7 @@
             const payloadString = JSON.stringify(payload);
 
             // Send back response to the user 
-            res.sendHeader('Content-type', 'application/json')
+            res.setHeader('Content-type', 'application/json')
             res.writeHead(statusCode);
             res.end(payloadString);
 
@@ -127,7 +110,6 @@
     });
 
  });
-
 
  // Define a server router
  server.router = { 

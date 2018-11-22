@@ -36,6 +36,7 @@
             // Close the file
             fs.close(fileDescriptor, (err) => {
                 if(err) return callback('Error closing files')
+                callback(false);
             });
 
         });
@@ -47,7 +48,7 @@
  // Read data from a file
  lib.read = ((dir, file, callback) => {
 
-    fs.readFile(`${lib.baseDir}${dir}/${file}.json`, (err, data) =>{
+    fs.readFile(`${lib.baseDir}${dir}/${file}.json`, 'utf8', (err, data) =>{
         if(!err && data) {
             const parsedData = helpers.parseJsonToObject(data);
             callback(false, parsedData);
@@ -59,9 +60,9 @@
 
 
  // Delete file 
- lib.detete = ((dir, file, callback) =>{
+ lib.delete = ((dir, file, callback) =>{
     //Unlink
-    fs.unlink(`${lib.baseDir}${dir}/${file}`, (err) => {
+    fs.unlink(`${lib.baseDir}${dir}/${file}.json`, (err) => {
         if(err) return callback('Error deleting file');
         callback(false);
     })
