@@ -113,7 +113,8 @@
 
  // Define a server router
  server.router = { 
-     users : handlers.users
+     users : handlers.users,
+     tokens : handlers.tokens
  }
 
 

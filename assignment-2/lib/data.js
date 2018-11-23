@@ -27,7 +27,6 @@
         // Convert the data to a string
         const stringData = JSON.stringify(data);
 
-        console.log(stringData)
 
         // Write the data the file
         fs.writeFile(fileDescriptor, stringData, (err) => {

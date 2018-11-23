@@ -35,7 +35,6 @@
  handlers._users = {};
 
  // Helper to pick submethod from user handler
-
  handlers.users = (( data , callback) => {
     const acceptableMethods = ['post', 'get', 'delete', 'put'];
     if(acceptableMethods.includes(data.method)) return handlers._users[data.method](data, callback);
@@ -65,14 +64,24 @@
             if(err){
                 // returns error meaning user is unique
 
-                // Create user object
-                const userObject = { userName, firstName, lastName, email, phone, password, address}
+                const hashedPassword = helpers.hash(password);
 
-                // Create new user
-                _data.create('users', userName, userObject, (err) => {
-                    if(!err) return callback(200);
-                    callback(500,{Error:'Could not create new user'});
-                });
+                // Create user object
+                const userObject = { userName, firstName, lastName, email, phone, hashedPassword, address}
+
+
+                if(hashedPassword){
+                    // Create new user
+                    _data.create('users', userName, userObject, (err) => {
+                        if (!err) return callback(200);
+                        callback(500, {
+                            Error: 'Could not create new user'
+                        });
+                    });
+                } else {
+                    callback(500, {Error : `Could not has user's password`})
+                }
+                    
 
             } else{
                 callback(500, {Error: 'Could not create new user'});
@@ -201,7 +210,7 @@
                     }
 
                     if(password) {
-                        userData.password = password
+                        userData.hashedPassword = helpers.hash(password)
                     }
 
                     if(address) {
@@ -228,6 +237,178 @@
     } 
 
  });
+
+
+ /*Token*/
+
+ // Container for token submethods 
+ handlers._tokens = {};
+ 
+
+ // Helper to pick submethod from user handler
+ handlers.tokens = ((data, callback) => {
+     const acceptableMethods = ['post', 'get', 'delete', 'put'];
+     if (acceptableMethods.includes(data.method)) return handlers._tokens[data.method](data, callback);
+     callback(405);
+ });
+
+
+ // Tokens POST
+ // options username and password 
+ handlers._tokens.post = ((data, callback) => {
+    
+    // Check the optional data
+    let { userName, password } = data.payload;
+
+    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+    password = typeof(password) === 'string' && password.trim().length > 0 ? password : false;
+
+    // Check if user provided data and proceed
+    if(userName && password){
+
+        // Look up user with respect to the userName 
+        _data.read('users', userName, (err, userData) => {
+
+            if(err) return callback(400, {Error: 'Could not find user'})
+
+            // Hash password provided by the user and compare to the hashed on file
+            const hashedPassword = helpers.hash(password);
+
+            if(hashedPassword === userData.hashedPassword) {
+                
+                // Create token with valid id and set expiration date for one hour
+                const tokenId = helpers.createRandomString(20);
+                const expires = Date.now() + 1000 * 60 * 60;
+
+                // Create token object
+                const tokenObject = {
+                    userName: userData.userName,
+                    tokenId,
+                    expires 
+                }
+
+                // Write token to file
+                _data.create('tokens', tokenId, tokenObject,(err) => {
+
+                    if(err) return callback(500, {Error : 'Could not create the new token'});
+                    callback(200, tokenObject);
+                });
+
+            } else {
+                callback(400, { Error:'Password did not match the specified user\'s stored password'})
+            }
+            
+        });
+
+    } else {
+       callback(400, {Error: 'Missing required fields(s)'})
+    }
+ 
+});
+ // Token GET
+ // Use querystring
+ handlers._tokens.get = ((data, callback) => {
+
+    // Check to see id sent is valid
+    let { id } = data.queryStringObject;
+
+    id = typeof(id) === 'string' && id.trim().length == 20 ? id : false;
+
+    if(id){
+        
+        // Look up token
+        _data.read('tokens', id, (err, tokenData) => {
+
+            if(err) return callback(404);
+
+            callback(200, tokenData);
+
+        })
+
+
+    } else {
+        callback(400, {Error: 'Missing required field'});
+    }
+
+ });
+
+ // Token Delete 
+ // Use querystring to get the user 
+
+ handlers._tokens.delete = ((data, callback) => {
+
+    // Check to see if id sent is valid
+    let { id } = data.queryStringObject;
+
+    id = typeof(id) === 'string' && id.trim().length == 20 ? id : false;
+
+    if(id){
+        // Look up the user
+        _data.read('tokens', id, (err, userData) => {
+            if(err) return callback(400, {Error: 'Could not find the specified user'});
+
+            _data.delete('tokens', id, (err) => {
+                if(err) return callback(500, {Error: 'Error deleting file'})
+
+                callback(200);
+
+            });
+        });
+
+    } else {
+         callback(400, {Error: 'Missing required field'});
+    }
+
+ });
+
+ // Token put 
+ // required data and boolean 
+
+ handlers._tokens.put = ((data, callback) => {
+
+    let { id, extend } = data.payload;
+
+    id = typeof(id) === 'string' && id.trim().length > 0 ? id : false;
+    extend = typeof(extend) === 'boolean' && extend == true ? true : false;
+    
+    // Check if user provides the information to extend the lifespan of the token
+    if(id && extend){
+        
+        // Look up the token 
+        _data.read('token', id, (err, tokenData) => {
+
+            if(!err && tokenData) {
+
+                // Check to see whethet current token has expired
+                if(tokenData.expires > Date.now()){
+
+                    // Extend the lifespan of the token
+                    tokenData.expires = Date.now() + 1000 * 60 * 60;
+
+                    _data.update('tokens', id, tokenData, (err) => {
+                        if(err) return   callback(500, {Error: `Could not update the token's expiration`});
+                        callback(200)
+                    });
+
+                } else {
+                    callback(400, {Error: 'The token has already expired, and cannot be extended'})
+                }
+
+            } else {
+                
+                callback(400, {Error: 'Specified token does not exist'})
+
+            }
+
+        })
+
+    } else {
+         callback(400, {Error: 'Missing required field(s) or field(s) are invalid '})
+    }
+
+ });
+
+
 
 
  module.exports = handlers;
