@@ -6,7 +6,7 @@
 
  // Dependencies
  const config = require('./config');
- const crypto = require()
+ const crypto = require('crypto')
 
  // Container for all the helps
  const helpers = {};
@@ -27,9 +27,7 @@ helpers.parseJsonToObject = (str) => {
 // Create funtion to hash string sha256
 helpers.hash = (str) => {
     if(typeof(str) === 'string' && str.length > 0) {
-        const hash = crypto.createHmac('sha256', config.secret)
-                           .update(str)
-                           .digest('hex');
+        const hash = crypto.createHmac('sha256', config.secret).update(str).digest('hex');
 
         return hash                   
 

@@ -259,10 +259,11 @@
     
     // Check the optional data
     let { userName, password } = data.payload;
+    console.log({userName, password})
 
     userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
     password = typeof(password) === 'string' && password.trim().length > 0 ? password : false;
-
+    
     // Check if user provided data and proceed
     if(userName && password){
 
@@ -375,7 +376,7 @@
     if(id && extend){
         
         // Look up the token 
-        _data.read('token', id, (err, tokenData) => {
+        _data.read('tokens', id, (err, tokenData) => {
 
             if(!err && tokenData) {
 
@@ -406,6 +407,26 @@
          callback(400, {Error: 'Missing required field(s) or field(s) are invalid '})
     }
 
+ });
+
+ // Verify that giveb User's token is valid 
+ handlers._tokens.verifyToken =((id, userName, callback) => {
+    
+    // Look up the token
+    _data.read('tokens', id, (err, tokenData) => {
+        
+        if(!err && tokenData){
+            if(token.userName == userName && token.expires > Date.now()){
+
+                callback(true);
+            } else {
+                callback(false);
+            }
+
+        } else {
+            callback(false);
+        }
+    })
  });
 
 
