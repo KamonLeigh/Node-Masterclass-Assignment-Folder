@@ -34,8 +34,12 @@
 
             // Close the file
             fs.close(fileDescriptor, (err) => {
-                if(err) return callback('Error closing files')
-                callback(false);
+                if(err) {
+                    callback('Error closing files')
+                } else {
+                    callback(false);
+                }
+               
             });
 
         });

@@ -57,26 +57,44 @@
     
 
     if(userName && firstName && lastName && email && phone && password && address){
-
+    
+    
         // Make sure that user is unique
         _data.read('users', userName, (err, data) => {
 
             if(err){
                 // returns error meaning user is unique
 
+                // Hash password
                 const hashedPassword = helpers.hash(password);
 
-                // Create user object
-                const userObject = { userName, firstName, lastName, email, phone, hashedPassword, address}
 
 
                 if(hashedPassword){
+
+                      // Create user object
+                     const userObject = {
+                         userName,
+                         firstName,
+                         lastName,
+                         email,
+                         phone,
+                         hashedPassword,
+                         address
+                     }
+                                   
                     // Create new user
                     _data.create('users', userName, userObject, (err) => {
-                        if (!err) return callback(200);
-                        callback(500, {
-                            Error: 'Could not create new user'
-                        });
+                        if (!err) {
+                            callback(200);
+                        } else {
+
+                            callback(500, {
+                                Error: 'Could not create new user'
+                            });
+
+                        }
+                        
                     });
                 } else {
                     callback(500, {Error : `Could not has user's password`})
@@ -84,19 +102,19 @@
                     
 
             } else{
-                callback(500, {Error: 'Could not create new user'});
+                callback(400, {Error: 'User already exists'});
             }
 
         })
 
     } else {
-        callback(403, {Error: 'Missing required fields'})
+        callback(400, {Error: 'Missing required fields'})
     }
  });
 
 
  // Create GET request
- //@TODO add token verification and hashed password
+
  handlers._users.get = ((data, callback) =>{
 
     // Check if user is valid
@@ -106,16 +124,35 @@
 
     // if query string is valid continue otherwise return an Error
     if(userName){
-        _data.read('users', userName, (err, data) => {
-            if(!err && data){
 
-                // Ensure password is not returned to user
-                delete data.password;
-                callback(200, data);
+        // Verify that user is valid using the token 
+        const token = typeof(data.headers.token) === 'string' ? data.headers.token : false;
+        console.log(token)
+        // Validate user
+        handlers._tokens.verifyToken(token, userName, (tokenIsValid) => {
+
+            if(tokenIsValid){
+                _data.read('users', userName, (err, data) => {
+                    if (!err && data) {
+
+                        // Ensure password is not returned to user
+                        delete data.hashedPassword;
+                        callback(200, data);
+                    } else {
+                        callback(404)
+                    }
+                })
+
             } else {
-                callback(404)
+
+                callback(403, {Error: 'Missing token in header, or token is not valid'})     
             }
-        })
+
+        })    
+    } else {
+
+        callback(400, {'Error': 'Missing required field'})
+
     }
  });
 
@@ -134,27 +171,44 @@
 
 
     if(userName){
-        // Look up user
-        _data.read('users', userName,(err, userData) => {
 
-            if(!err && userData){
-                
-                // Delete user
-                _data.delete('users', userName, (err, userData) => {
-                    console.log(userName)
-                    if(!err){
-                        callback(200)
+        // Get the token form the user
+        const token = typeof(data.headers.token) === 'string' ? data.headers.token : false;
+
+        token._tokens.verifyToken(token, userName  ,(tokenIsValid) => {
+
+            if(tokenIsValid){
+
+                // Look up user
+                _data.read('users', userName, (err, userData) => {
+
+                    if (!err && userData) {
+
+                        // Delete user
+                        _data.delete('users', userName, (err, userData) => {
+                            
+                            if (!err) {
+                                callback(200)
+                            } else {
+                                callback(500, {
+                                    Error: 'user could not be deleted'
+                                })
+                            }
+
+                        });
+
                     } else {
-                        callback(500, {Error: 'user could not be deleted'})
+                        callback(500, {
+                            Error: 'Could not find user'
+                        });
                     }
 
                 });
-                
             } else {
-                 callback(500, {Error: 'Could not find user'});
+                 callback(403, {Error: 'Missing token in header, or token is not valid'})
             }
 
-        });
+        })
 
     } else {
          callback(400, {'Error': 'Missing required field'})
@@ -184,49 +238,67 @@
     // Error if the phone number is invalid 
     if(userName){
 
+
         // Error if optional data is invalid 
         if(firstName || lastName || email || phone || password || address){
           
-            // Look up the user 
-            _data.read('users', userName, (err, userData) => {
+            // verify that the token is valid
+            const token = typeof(data.headers.token) === 'string' ? data.headers.token : false;
 
-                if(!err && userData){
+            handlers._tokens.verifyToken(token, userName, (tokenIsValid) =>{
 
-                    // Update the necessary fields
-                    if(firstName) {
-                        userData.firstName = firstName
-                    }
+                if(tokenIsValid){
 
-                    if(lastName) {
-                        userData.lastName = lastName
-                    }
+                     // Look up the user 
+                     _data.read('users', userName, (err, userData) => {
 
-                    if(email) {
-                        userData.email = email
-                    }
+                         if (!err && userData) {
 
-                    if(phone) {
-                        userData.phone = phone
-                    }
+                             // Update the necessary fields
+                             if (firstName) {
+                                 userData.firstName = firstName
+                             }
 
-                    if(password) {
-                        userData.hashedPassword = helpers.hash(password)
-                    }
+                             if (lastName) {
+                                 userData.lastName = lastName
+                             }
 
-                    if(address) {
-                        userData.address = address
-                    }
+                             if (email) {
+                                 userData.email = email
+                             }
 
-                    
-                    // Store the new updates
-                    _data.update('users', userName, userData, (err) => {
-                        if(!err) return callback(200);
-                          callback(500, {'Error': 'Could not update the user'});
+                             if (phone) {
+                                 userData.phone = phone
+                             }
 
-                    });
+                             if (password) {
+                                 userData.hashedPassword = helpers.hash(password)
+                             }
+
+                             if (address) {
+                                 userData.address = address
+                             }
+
+
+                             // Store the new updates
+                             _data.update('users', userName, userData, (err) => {
+                                 if (!err) return callback(200);
+                                 callback(500, {
+                                     'Error': 'Could not update the user'
+                                 });
+
+                             });
+                         }
+
+                     });
+
+                } else {
+
+                 callback(403, {Error: 'Missing token in header, or token is not valid'});
+
                 }
 
-            });
+            })
 
         } else {
              callback(400,{'Error':'Missing required field'})
@@ -259,7 +331,7 @@
     
     // Check the optional data
     let { userName, password } = data.payload;
-    console.log({userName, password})
+   
 
     userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
     password = typeof(password) === 'string' && password.trim().length > 0 ? password : false;
@@ -416,7 +488,7 @@
     _data.read('tokens', id, (err, tokenData) => {
         
         if(!err && tokenData){
-            if(token.userName == userName && token.expires > Date.now()){
+            if(tokenData.userName == userName && tokenData.expires > Date.now()){
 
                 callback(true);
             } else {
