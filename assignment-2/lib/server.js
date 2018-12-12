@@ -114,7 +114,11 @@
  // Define a server router
  server.router = { 
      users : handlers.users,
-     tokens : handlers.tokens
+     tokens : handlers.tokens,
+     orders: handlers.orders,
+     menu: handlers.menu,
+     orders: handlers.orders,
+     shoppingcart: handlers.shoppingcart                                                                                      
  }
 
 

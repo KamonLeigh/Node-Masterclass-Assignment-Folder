@@ -26,6 +26,7 @@
 
  // Path for not found
  handlers.notFound = (data, callback) => {
+    console.log('hfhhfh')
     callback(403);
  };
 
@@ -288,6 +289,8 @@
                                  });
 
                              });
+                         } else {
+                             callback(403, {Error: 'User could not be found'})
                          }
 
                      });
@@ -466,7 +469,7 @@
                 } else {
                     callback(400, {Error: 'The token has already expired, and cannot be extended'})
                 }
-
+ 
             } else {
                 
                 callback(400, {Error: 'Specified token does not exist'})
@@ -482,25 +485,392 @@
  });
 
  // Verify that giveb User's token is valid 
- handlers._tokens.verifyToken =((id, userName, callback) => {
-    
-    // Look up the token
-    _data.read('tokens', id, (err, tokenData) => {
+ handlers._tokens.verifyToken =  (id, userName, callback) =>{
+     // Lookup the token
+     _data.read('tokens', id,  (err, tokenData) => {
+         if (!err && tokenData) {
+             // Check that the token is for the given user and has not expired
+             if (tokenData.userName == userName && tokenData.expires > Date.now()) {
+                 callback(true);
+
+             } else {
+
+                 callback(false);
+             }
+
+         } else {
+             callback(false)
+         }
+     });
+ };
+
+
+ // Container for menu submethod
+ handlers._menu = {}
+
+
+ handlers.menu = ((data, callback) => {
+    //list accepted methods 
+     if(data.method === 'get'){
+
+        handlers._menu.get(data,callback)
+
+     } else {
+         callback(405)
+     }
+ })
+
+
+ // Send menu to the user upon request
+ handlers._menu.get = ((undefined, callback) => {
+
+    _data.read('menu', 'menu', (err, menuData) => {
+
+        if(!err && menuData) {
         
-        if(!err && tokenData){
-            if(tokenData.userName == userName && tokenData.expires > Date.now()){
-
-                callback(true);
-            } else {
-                callback(false);
-            }
-
+            callback(200, menuData);
         } else {
-            callback(false);
+
+            callback(400, {Error: 'Menu could not be found'})
         }
     })
+ })
+
+ // Container containing order submethods
+ handlers._shoppingcart = {};
+
+ handlers.shoppingcart = ((data, callback) => {
+    
+    // List all the accepted methods
+    const acceptableMethods = ['post', 'get', 'put', 'delete'];
+    if(!acceptableMethods.includes(data.method)) return callback(405);
+    handlers._shoppingcart[data.method](data, callback)
+
  });
 
+ // Create post request for order
+ handlers._shoppingcart.post = ((data, callback) => {
+
+    // destruct and check for the required keys 
+    let { margherita, pepperoni, meatball, aubergine, userName }  = data.payload;
+
+    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+
+    margherita = typeof(margherita) === 'number' && margherita > 0 ? margherita : false;
+    pepperoni = typeof(pepperoni) === 'number' && pepperoni > 0  ? pepperoni : false;
+    meatball = typeof(meatball) === 'number' && meatball > 0 ? meatball : false;
+    aubergine = typeof(aubergine) === 'number' && aubergine > 0 ? aubergine : false;
+
+    if(userName){
+
+        // proceed if at least one is true
+        if (margherita || pepperoni || meatball || aubergine) {
+
+    
+
+            // verify that the token is valid
+            const token = typeof (data.headers.token) === 'string' ? data.headers.token : false;
+
+            //autheticate user 
+            handlers._tokens.verifyToken(token, userName, (tokenIsValid) => {
+
+                if(tokenIsValid){
+                   
+                    // Look up the user 
+                    _data.read('users', userName,(err, userData) =>{
+                        
+                        if(!err && userData){
+                            
+
+                            // get the menu 
+                            _data.read('menu', 'menu', (err, menuData) => {
+
+                            if(!err && menuData){
+                                
+                                const order = [];
+
+                                const menu = menuData.menu
+
+                                console.log(menu);
+
+                                const shoppingcart = {
+                                    margherita,
+                                    pepperoni,
+                                    aubergine,
+                                    meatball
+                                }
+
+                               
+                                menu.forEach((pizza) => {
+
+                                    if(shoppingcart[pizza.name]){
+
+                                        const total = pizza.price * shoppingcart[pizza.name];
+                                        
+                                        // Make object and push into order array
+                                        const pizzaTotal = {
+                                            pizza: pizza.name,
+                                            total
+                                        }
+
+                                        order.push(pizzaTotal);
+                                    }
+
+                                   
+                                })
+
+                                // Use reduce to get the total
+                                const subTotal  = order.reduce((total, pizza) => {
+
+                                    return total += pizza.total
+                                }, 0);
+
+                                // generate order number
+                                const orderNumber = helpers.createRandomString(20)
+
+                                
+
+                                    const orderObject = {
+                                        orderNumber,
+                                        userName: userData.userName,
+                                        email: userData.email,
+                                        subTotal,
+                                        order
+                                    }
+
+                                    // Write order to file 
+                                    _data.create('shoppingcart', orderNumber, orderObject,(err) =>{
+
+                                         if (err) return callback(500, {
+                                             Error: 'Could not create the new token'
+                                         });
+                                         callback(200, orderObject);
+                                    })
+
+                                    
+                                    
+                                    } else {
+
+                                       callback(500, {Error: 'Sytem error unable to complete order'})
+                                    }
+                                })
+
+                            } else {
+                                callback(400, {Error: 'Specified user does not exist'})
+                            }
+                    
+                        })
+
+                    } else {
+
+                         callback(403, {Error: 'Missing token in header, token is not valid or token is not valid for the user'});
+
+                }
+
+            });
+       
+        } else {
+
+            callback(400, {Error: 'Missing order, order syntax is invalid'})
+
+        }
+    } else {
+        callback(400, {Error: 'Ensure username is sent with order'})
+    }  
+ });      
+
+ // Delete the shoppin card
+ handlers._shoppingcart.delete = ((data, callback) => {
+
+    // Obtain order number from the query string 
+    const ordernumber = data.queryStringObject.ordernumber;
+
+    // Emsure the strings fits criteria 
+    const orderNumber = typeof(ordernumber) === 'string' && ordernumber.trim().length  === 20 ? ordernumber : false;
+
+    if(orderNumber){
+
+        // Look up the order
+        _data.read('shoppingcart', orderNumber, (err, shoppingcartData) => {
+
+            if(!err && shoppingcartData){
+
+                // Verify the user using the tokens 
+                const token = typeof(data.headers.token) === 'string' && data.headers.token.trim().length == 20 ? data.headers.token : false;
+
+                // Check to see whether user is logged in  
+                handlers._tokens.verifyToken(token, shoppingcartData.userName, (tokenData) => {
+
+                    if(tokenData){
+
+                        // Delete the order in the shopping card 
+                        _data.delete('shoppingcart', orderNumber, (err) => {
+
+                            if(!err) {
+                                callback(200)
+                            } else {
+
+                                callback(500, {Error: 'could not delete order'})
+                            }
+                        })
+
+
+                    } else {
+
+                        callback(403);
+                    }
+
+                });
+
+            } else {
+
+              callback(400, {'Error' : 'Order does not exist'});
+            }
+
+        })
+    }
+
+ });
+
+ // User can retieve shopping cart upon request 
+ handlers._shoppingcart.get = (data, callback) => {
+
+    // Obtain order number from query string
+    const ordernumber  = data.queryStringObject.ordernumber;
+
+    // Ensure string fits criteria
+    const orderNumber = typeof(ordernumber) === 'string' && ordernumber.trim().length === 20 ? ordernumber : false;
+
+    if(orderNumber){
+
+        // Look up the order
+        _data.read('shoppingcart', orderNumber,(err, shoppingcartData) => {
+
+            if(!err && shoppingcartData){
+
+                // check if user has valid token and we can send back the data
+                const token = typeof(data.headers.token) === 'string' && data.headers.token.trim().length == 20 ? data.headers.token : false;
+
+            
+                // Check if the user is logged in 
+                handlers._tokens.verifyToken(token, shoppingcartData.userName, (tokenIsValid) => {
+
+                    if(tokenIsValid){
+
+                        callback(200, shoppingcartData);
+
+                    } else {
+
+                        callback(403);
+
+                    }
+
+                })
+
+            } else {
+
+                callback(400, {'Error' : 'Order does not exist'});
+
+            }
+
+        })
+
+    } else {
+    callback(400, {'Error': 'Missing required field.'});
+    }
+
+
+ }
+
+
+ // container containing submethods 
+ handlers._orders = {};
+
+ handlers.orders = ((data, callback) => {
+
+    if(data.method == 'get') {
+
+    handlers._orders[data.method](data, callback);
+    } else {
+
+        callback(405)
+    }
+ });
+
+
+handlers._orders.get  = ( (data, callback) => {
+
+     // Obtain order number from query string
+    const ordernumber  = data.queryStringObject.ordernumber;
+
+    // Ensure string fits criteria
+    const orderNumber = typeof(ordernumber) === 'string' && ordernumber.trim().length === 20 ? ordernumber : false;
+   
+    if(orderNumber){
+
+        // Look up order
+        _data.read('shoppingcart', orderNumber, (err, shoppingcartData) => {
+
+           
+            if(!err && shoppingcartData){
+
+             const token = typeof (data.headers.token) === 'string' && data.headers.token.trim().length == 20 ? data.headers.token : false;
+            
+               
+
+              const { email, subTotal, userName } = shoppingcartData;
+    
+            handlers._tokens.verifyToken(token, userName, (tokenData) => {
+
+                console.log({tokenData})
+                if(tokenData){
+
+
+                    helpers.chargeCustomer(email, subTotal, ordernumber, (err) => {
+                        console.log({err})
+                    
+                        if(!err){
+
+                            helpers.sendEmail(email, orderNumber , subTotal, (err) => {
+                                console.log(err)
+                                if(!err){
+                                    callback(200)
+                                } else {
+
+                                   callback(500, {Error: 'Payment could not be made or invalid email'})
+                                }
+
+                            })
+                            
+                        } else {
+
+                            callback(500, {Error: 'Payment could not be made'})
+                        }
+                    })
+
+                } else {
+
+                     callback(403);
+                }
+
+            })
+
+            } else {
+
+                callback(400, {'Error' : 'Order does not exist'});  
+            }
+        })
+
+
+
+
+    } else {
+
+        callback(400, {'Error': 'Missing required field.'});
+    }
+
+
+});
 
 
 

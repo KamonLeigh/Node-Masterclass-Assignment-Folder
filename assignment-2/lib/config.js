@@ -15,7 +15,14 @@
      httpPort: 3000,
      httpsPort:3001,
      envName: 'staging',
-     secret:'ilovenode'
+     secret:'ilovenode',
+     mailgun:{
+         apiKey:'059e099e-9792b297  ',
+         domain: 'sandbox26798bbf7eec4180a4dd48455042ea6f'
+     },
+     stripe:{
+         apiKey: 'sk_test_jvtMYHUDMaY4GLQibHzNMlcs'
+     }
  };
 
  environments.production = {
