@@ -1,0 +1,24 @@
+{
+
+    "menu": [
+            {
+                "name": "margherita",
+                "price": 7
+
+            },
+
+            {
+                "name": "pepperoni",
+                "price": 10
+            },
+
+            {
+                "name": "meatball",
+                "price": 10
+            },
+            {
+                "name": "aubergine",
+                "price": 7
+            }
+    ]
+}
