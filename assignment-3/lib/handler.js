@@ -22,14 +22,35 @@
  handlers.index = (data, callback) => {
 
     if(data.method === 'get'){
+        
+        // Preare data for interpolation
+        const templateData = {
+            'head.title':' Pizza Delivery- Made easy',
+            'head.description':'A Simple straightforward service!!!',
+            'body.class': 'index'
+        };
 
 
         // Return the template as a string
-        helpers.getTemplate('index', (err, str) => {
+        helpers.getTemplate('index', templateData, (err, str) => {
 
             if(!err && str){
 
-                callback(200, str, 'html');
+              // Add the universal header and footer to the string 
+              helpers.addUniversalTemplates(str, templateData, (err, strData) => {
+
+                if(!err && strData){
+
+
+                    // Return the page as html
+                    callback(200, strData, 'html')
+                } else {
+
+                    callback(500, undefined, 'html')
+                }
+
+
+              })
             } else {
                 callback(500, undefined, 'html');
             }
@@ -44,7 +65,58 @@
  }
 
 
+// Serve public asserts
+handlers.public = (data, callback) => {
 
+    // Reject any call that is not get
+    if(data.method === 'get'){
+        // Get the file name being requested 
+        const trimmedAssetName = data.trimmedPath.replace('public/', '').trim();
+
+        if(trimmedAssetName.length > 0){
+            // Read in the asserts data
+            helpers.getStaticAssets(trimmedAssetName, (err, data) => {
+                if(!err && data){
+
+                    // Determine the content type (defaulr to plain text)
+                    let contentType = 'plain';
+
+                    if(trimmedAssetName.indexOf('.css') > -1){
+                        contentType = 'css';
+                    }
+
+                    if (trimmedAssetName.indexOf('.png') > -1) {
+                        contentType = 'png';
+                    }
+
+                    if (trimmedAssetName.indexOf('.jpg') > -1) {
+                        contentType = 'jpg';
+                    }
+
+                    if (trimmedAssetName.indexOf('.ico') > -1) {
+                        contentType = 'favicon';
+                    }
+
+
+                    // Callback the data
+                    callback(200, data, contentType);
+
+                } else {
+
+                    callback(404);
+                }
+            })
+
+        } else {
+
+            callback(404);
+        }
+
+    } else {
+        callback(405)
+    }
+
+}
 
 
 /*

@@ -102,6 +102,7 @@
             statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
 
 
+
             let payloadString = '';
 
             if(contentType === 'json'){
@@ -112,39 +113,41 @@
 
             if(contentType === 'html'){
                 res.setHeader('content-type', 'text/html');
-                payload  = typeof(payload) === 'string' ? payload : '';
+                payloadString = typeof(payload) === 'string' ? payload : '';
+            
 
             }
 
             if(contentType ==='css'){
                 res.setHeader('content-type', 'text/css');
-                payload = typeof(payload) !== 'undefined' ? payload : '';
+                payloadString = typeof(payload) !== 'undefined' ? payload : '';
+        
             }
 
             if(contentType === 'jpg'){
                 res.setHeader('content-type', 'image/jpeg');
-                payload = typeof(payload) !== 'undefined' ? payload : '';
+               payloadString = typeof(payload) !== 'undefined' ? payload : '';
             }
 
             if(contentType === 'plain'){
                 res.setHeader('content-type', 'plain');
-                payload = typeof(payload) !== 'undefined' ? payload : '';
+                payloadString= typeof(payload) !== 'undefined' ? payload : '';
             }
 
             if(contentType === 'favicon'){
                 res.setHeader('content-type', 'image/x-icon');
-                payload = typeof(payload) !== 'undefined' ? payload : '';
+                payloadString= typeof(payload) !== 'undefined' ? payload : '';
             }
 
             if(contentType === 'png'){
                 res.setHeader('content-type', 'image/png');
-                payload = typeof(payload) !== 'undefined' ? payload : '';
+                payloadString = typeof(payload) !== 'undefined' ? payload : '';
             }
 
 
 
 
-
+    
 
             // Send back response to the user 
             res.writeHead(statusCode);

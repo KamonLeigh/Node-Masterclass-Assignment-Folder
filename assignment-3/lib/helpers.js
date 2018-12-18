@@ -75,7 +75,6 @@ helpers.createRandomString = function (strLength) {
 // Send an email via mailgun
 helpers.sendEmail = (email, orderId, total, callback) => {
     
-    console.log({email, orderId, total})
 
     // validate variables in function
     email = typeof(email) === 'string' && email.trim().length > 0 ?  email : false;
@@ -275,6 +274,11 @@ helpers.getTemplate = (templateName, data, callback) => {
 
             // Validate data from file 
             if(!err && str && str.length > 0){
+                
+
+                const finalString = helpers.interpolate(str, data);
+
+                callback(false, finalString);
 
             } else {
 
@@ -289,6 +293,103 @@ helpers.getTemplate = (templateName, data, callback) => {
     }
 
 }
+
+
+// helper function to rea static files 
+helpers.getStaticAssets = (fileName, callback) => {
+
+    // Get path to files in public directory
+    const publicDir = path.join(__dirname, '../public/');
+    fileName = typeof(fileName) === 'string' && fileName.length > 0 ? fileName :  false;
+
+    if(fileName){
+         // Read file from public directory
+        fs.readFile(publicDir + fileName, (err, data) => {
+
+            if (!err && data) {
+
+                callback(false, data)
+            } else {
+
+                callback('File could not be found ')
+            }
+
+        })
+
+    } else {
+        callback('A valid file name was not specifieds')
+    }   
+
+}
+
+
+// Take a given string and data object, and find/replace all the keys within it 
+helpers.interpolate = (str, data) => {
+    str = typeof(str) == 'string' && str.length > 0 ? str : '';
+    data = typeof(data) == 'object' && data !== null ? data : {};
+
+
+
+
+    // Add the templateGlobals to the data object
+    for(const keyName in config.templateGlobals){
+        data[`global.${keyName}`] = config.templateGlobals[keyName];
+    }
+
+   
+
+    // For each key in the str replace the placeholder with the corresponding value 
+
+    for(const key in data){
+        if(data.hasOwnProperty(key) && typeof(data[key]) === 'string'){
+            const replace = data[key];
+            const find = '{'+key+'}';
+            console.log({replace, find});
+
+            // Swap out the appropaite values 
+            str = str.replace(find, replace);
+        }
+    }
+
+    return str;
+ 
+};
+
+// Add the universal header and footer to a string, and pass the provided data object to the header and footer for interpolation
+helpers.addUniversalTemplates = (str, data, callback) => {
+    str = typeof(str) === 'string' && str.length > 0 ? str : '';
+    data = typeof(data) === 'object' && data !== null ? data : {};
+
+    // Get the header string
+    helpers.getTemplate('_header', data, (err,  headerString) => {
+
+        if(!err && headerString){
+
+            // Get the footer string 
+            helpers.getTemplate('_footer', data, (err, footerString) => {
+
+                if(!err && footerString){
+                    // Add all of the strings together 
+
+                    const finalString = headerString + str + footerString;
+                    callback(false, finalString);
+                } else {
+
+                    callback('Could not find the footer ')
+                }
+
+            })
+
+        } else {
+
+            callback('Could not find the header')
+        }
+
+
+    })
+
+
+};
 
 
  module.exports = helpers;
