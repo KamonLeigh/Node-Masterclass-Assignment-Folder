@@ -175,7 +175,8 @@
      'api/menu': handlers.menu,
      'api/orders': handlers.orders,
      'api/shoppingcart': handlers.shoppingcart,
-     'public': handlers.public   
+     'public': handlers.public, 
+     'ping': handlers.ping
 
  }
 

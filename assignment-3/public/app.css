@@ -12,5 +12,127 @@ html {
 }
 
 body {
-    background-color: blue;
+    font-size: 1.5rem;
+    margin: 0;
 }
+
+h1,
+h2,
+h3 {
+    text-align: center;
+    text-transform: uppercase;
+}
+
+
+header {
+    display: flex;
+    justify-content: space-between;
+    background-color: black;
+    height: 54px;
+}
+
+header a img {
+    color: white;
+
+}
+
+footer {
+    background-color: black;
+    color: white;
+    height:54px;
+    text-align: center;
+    margin-top: 40px;
+    font-size: 1.75rem;
+    letter-spacing: 0.5;
+  
+    
+}
+
+.copyright {
+   margin-top: 5px;
+}
+
+header ul {
+    display: flex;
+    justify-content: space-evenly;
+    margin-right: 1.5em;
+    list-style-type: none;
+}
+
+header ul li {
+    margin: 3.5px;
+}
+
+header ul li a {
+    text-decoration: none;
+    color: white;
+    letter-spacing: .75px;
+}
+
+.logo {
+    margin-left: 1.5em;
+}
+
+.main {
+    display: flex;
+    flex-direction:column;
+    justify-content: space-evenly;
+    height:calc(100% - 144px)
+}
+
+.main-selection{
+    display: flex;
+    align-self: center;
+   flex-direction: column;
+   color:white;
+   text-align: center;
+   height: 200px;
+   justify-content: space-between;
+   background-color: gray;
+   font-size: 1.75rem;
+   
+}
+
+.blurb {
+    margin: 5rem 2rem 0 2rem;
+    letter-spacing: 0.75;
+    text-align: center;
+}
+
+.cta,
+a.cta:hover,
+a.cta:active,
+a.cta:visited,
+button.cta:hover,
+button.cta:active,
+button.cta:visited{
+    text-transform: uppercase;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    font-weight: bold;
+    border-radius: 5px;
+    padding: 15px;
+    text-align: center;
+   
+   
+}
+
+.ctawrapper{
+  margin-bottom: 30px;
+}
+
+
+.cta.blue {
+    background-color: #214478 !important;
+}
+
+.cta.green {
+    background-color: #217844 !important;
+}
+
+.cta.red {
+    background-color: #c83737 !important;
+}
+
+
