@@ -24,6 +24,17 @@ h3 {
 }
 
 
+
+body.loggedIn header ul li.loggedIn {
+    display: inline-block;
+}
+
+body.loggedIn header ul li.loggedOut {
+    display: none;
+}
+
+
+
 header {
     display: flex;
     justify-content: space-between;
@@ -34,6 +45,10 @@ header {
 header a img {
     color: white;
 
+}
+
+header ul li.loggedIn {
+    display: none;
 }
 
 footer {
@@ -133,6 +148,38 @@ button.cta:visited{
 
 .cta.red {
     background-color: #c83737 !important;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: gray;
+    width: 500px;
+    margin: 0 auto;
+    color: #fff;
+    
+}
+
+label {
+    float: left;
+    width: 25rem;
+    vertical-align: top;
+    text-align: right;
+    margin-right: 1.5rem;
+    margin-top: 1rem;
+    font-weight: bold;
+    letter-spacing: .1rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    border-radius: 2px;
+    border: none;
+    background-color: #fff;
+    height: 2.0rem;
+    margin-left: 1rem;
 }
 
 

@@ -65,6 +65,135 @@
  }
 
 
+ 
+
+ // Create account
+ handlers.accountCreate = (data, callback) => {
+  
+    // Rehect request that is not a GET
+    if(data.method == 'get'){
+       
+        // Prepare data for interpolation
+        const templateData = {
+            'head.title' : 'Create an Account',
+            'head.description': 'Signup is easy and only takes a few seconds.',
+            'body.class': 'accountCreate'
+        }
+
+        helpers.getTemplate('accountCreate', templateData, (err, str) => {
+
+            if(!err && str){
+                // Add the header and footer to html 
+                helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                    if(!err && str){
+                        // return html back to user
+                        callback(200, str, 'html');
+                    } else {
+
+                        callback(500, undefined, 'html');
+                    }
+                })
+
+            } else {
+                callback(500, undefined, 'html')
+            }
+        })
+
+    } else {
+        callback(405, undefined, 'html')
+    }
+
+ }
+
+
+ // Session Create
+ handlers.sessionCreate = (data, callback ) => {
+
+    // Only procedd if method is a GET method
+    if(data.method === 'get') {
+
+        // Prepare data for intepolation
+        const templateData = {
+
+            'head.title': 'Login into your account',
+            'head.description': 'Please enter your User Name and Password to access your account.',
+            'body.class': 'sessionCreate'
+        }
+
+        helpers.getTemplate('sessionCreate', templateData, (err, str) => {
+            
+            if(!err && str){
+                // Add the header to the html file
+                helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                    if(!err && str) {
+
+                        // Send html file back to user 
+                        callback(200, str, 'html')
+
+                    } else {
+                        callback(500, undefined, 'html');
+                    }
+                });
+
+            } else {
+                callback(500, undefined, 'html')
+            }
+
+
+        });
+
+    } else {
+        callback(405, undefined, 'html')
+    }
+
+ }
+
+// Session Delete
+ handlers.sessionDelete = (data, callback) => {
+
+     // Only procedd if method is a GET method
+     if (data.method === 'get') {
+
+         // Prepare data for intepolation
+         const templateData = {
+
+             'head.title': 'Logged Out',
+             'head.description': 'You have been logged out of youraccount',
+             'body.class': 'sessionDeleted'
+         }
+
+         helpers.getTemplate('sessionDelete', templateData, (err, str) => {
+
+             if (!err && str) {
+                 // Add the header to the html file
+                 helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                     if (!err && str) {
+
+                         // Send html file back to user 
+                         callback(200, str, 'html')
+
+                     } else {
+                         callback(500, undefined, 'html');
+                     }
+                 });
+
+             } else {
+                 callback(500, undefined, 'html')
+             }
+
+
+         });
+
+     } else {
+         callback(405, undefined, 'html')
+     }
+
+ }
+
+
 // Serve public asserts
 handlers.public = (data, callback) => {
 
@@ -105,7 +234,7 @@ handlers.public = (data, callback) => {
 
                     callback(404);
                 }
-            })
+            });
 
         } else {
 
@@ -164,10 +293,11 @@ handlers.public = (data, callback) => {
     firstName = typeof (firstName) === 'string' && firstName.trim().length > 0 ? firstName : false;
     lastName = typeof (lastName) === 'string' && lastName.trim().length > 0 ? lastName : false;
     email = typeof(email) === 'string' && email.trim().length > 3 ? email: false;
-    phone = typeof(phone) === 'string' && phone.trim().length > 10 ? phone : false;
+    phone = typeof(phone) === 'string' && phone.trim().length > 9 ? phone : false;
     password = typeof(password) === 'string' && password.trim().length > 0 ? password : false;
     address = typeof(address) === 'string' && address.trim().length > 3 ? address : false;
     
+    console.log(userName, firstName, lastName, email,  phone,  password, address)
 
     if(userName && firstName && lastName && email && phone && password && address){
     
@@ -448,9 +578,11 @@ handlers.public = (data, callback) => {
     let { userName, password } = data.payload;
    
 
+  
     userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
     password = typeof(password) === 'string' && password.trim().length > 0 ? password : false;
     
+
     // Check if user provided data and proceed
     if(userName && password){
 
@@ -461,6 +593,8 @@ handlers.public = (data, callback) => {
 
             // Hash password provided by the user and compare to the hashed on file
             const hashedPassword = helpers.hash(password);
+
+            console.log(hashedPassword)
 
             if(hashedPassword === userData.hashedPassword) {
                 

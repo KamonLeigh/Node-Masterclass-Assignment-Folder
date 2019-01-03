@@ -1,0 +1,21 @@
+<h1>Login To Your Account</h1>
+<h2>Enter User Name and Password</h2>
+
+
+<div class="formWrapper">
+ <form id="sessionCreate" action="api/tokens" method="POST">
+        <div class="formError"></div>
+        <label for="userName">
+            User Name
+            <input type="text" name="userName" placeholder="johnsmith">
+        </label>
+        <label for="password">
+            Password
+            <input type="password" name="password" placeholder="Make it a good one" />
+        </label>
+        <div class="inputWrapper ctaWrapper">
+            <button type="submit" class="cta blue">Get Started</button>
+        </div>
+
+    </form>
+</div>
