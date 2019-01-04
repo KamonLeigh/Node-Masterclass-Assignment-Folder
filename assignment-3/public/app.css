@@ -182,4 +182,35 @@ input[type="password"] {
     margin-left: 1rem;
 }
 
+table {
+    border-collapse: collapse;
+}
+
+.menu-list table {
+    margin: 0 auto;
+    width:35%;
+    margin-top: 2rem;
+}
+
+/* .menu-list thead th{
+    
+} */
+
+.menu-list thead th {
+    text-align: left;
+    text-transform: uppercase;
+    color: #fff;
+    background-color:#217844;
+    padding-top: 2rem;
+    padding-bottom: 1.2rem;
+    background: linear-gradient(to bottom, #217844, #217871)
+}
+
+.menu-list th, .menu-list td {
+    font-size: 1.5rem;
+    border: 1px solid #217844;
+    padding: 3px 7px 2px 7px;
+}
+
+
 

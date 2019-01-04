@@ -91,6 +91,57 @@
       xhr.send(payloadString);
  }
 
+ // Bind the menu button 
+ app.bindMenuButton = () => {
+    document.querySelector('.menu a').addEventListener('click', (e) => {
+   
+    // Stop page from redirecting anywhere
+    e.preventDefault();
+
+
+
+    // load data from menu api
+    app.menuLoad();
+
+    });
+ };
+
+
+ // Click button to redirect user to the correcty page with menu data
+
+ app.menuLoad = () => {
+    
+   // Make an api call to menu api
+
+   app.client.request(undefined, 'api/menu', 'GET', undefined, undefined, (statusCode, responsePayload) => {
+
+      // map throw the array and generate html
+      if(statusCode === 200 && responsePayload){
+
+         const table = document.querySelector('.table-list');
+
+         const menuItems = responsePayload.menu;
+
+         let menuList = '';
+         
+         menuItems.forEach((menuItem) => {
+            const item = `<tr>
+            <td>${menuItem.name}</td>
+            <td>£${menuItem.price}</td>
+            </tr>`
+            
+            menuList +=item;
+         });
+
+        table.innerHTML = menuList;
+      
+      }
+     
+
+
+   });
+ }
+
 // Bind the logout Button 
  app.bindLogoutButton = () => {
     document.getElementById("logoutButton").addEventListener('click', (e) => {
@@ -328,6 +379,33 @@ app.tokenRenewalLoop = () => {
    }, 1000 * 60);
 };
 
+// Load data on page
+app.loadDataOnPage = () => {
+
+   // Get the current page from the body class 
+   const bodyClasses = document.querySelector('body').classList;
+   const primayClass = typeof(bodyClasses[0]) == 'string' ? bodyClasses[0] : false;
+
+
+   if(primayClass == 'accountEdit'){
+      app.loadAccountEditData();
+   }
+
+
+}
+
+app.loadAccountEditData = () => {
+   // Get the user data from the token otherwise logout
+   const userName = typeof(app.config.sessionToken.userName) == 'string' ? app.config.sessionToken.config : false;
+
+   if(userName){
+
+   } else {
+      // If the request comes back as something other than 200, log the user our (on the assumption that the api is temporarily down or the users token is bad)
+      app.logUserOut()
+   }
+}
+
 
 // Init (bootstrapping)
 app.init = () => {
@@ -342,6 +420,12 @@ app.init = () => {
 
    // Bind logout button
    app.bindLogoutButton();
+
+   // Bind menu button
+   app.menuLoad();
+
+   // Load Data on page 
+   app.loadDataOnPage();
 }
 
  

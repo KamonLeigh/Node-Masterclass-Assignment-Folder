@@ -194,6 +194,94 @@
  }
 
 
+// Session showing list of pizzas
+handlers.sessionMenu = (data, callback) => {
+
+    // Only procedd if method is a GET method
+    if (data.method === 'get') {
+
+        // Prepare data for intepolation
+        const templateData = {
+
+            'head.title': 'These are the pizzas we have on offer',
+            'head.description': 'Please check out the pizzas we have on offer.',
+            'body.class': 'sessionMenu'
+        }
+
+        helpers.getTemplate('sessionMenu', templateData, (err, str) => {
+
+            if (!err && str) {
+                // Add the header to the html file
+                helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                    if (!err && str) {
+
+                        // Send html file back to user 
+                        callback(200, str, 'html')
+
+                    } else {
+                        callback(500, undefined, 'html');
+                    }
+                });
+
+            } else {
+                callback(500, undefined, 'html')
+            }
+
+
+        });
+
+    } else {
+        callback(405, undefined, 'html')
+    }
+
+}
+
+
+// Edit your account
+// Session Create
+handlers.accountEdit = (data, callback) => {
+
+    // Only procedd if method is a GET method
+    if (data.method === 'get') {
+
+        // Prepare data for intepolation
+        const templateData = {
+
+            'head.title': 'Account Settings',
+            'body.class': 'accountEdit'
+        }
+
+        helpers.getTemplate('sessionEdit', templateData, (err, str) => {
+
+            if (!err && str) {
+                // Add the header to the html file
+                helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                    if (!err && str) {
+
+                        // Send html file back to user 
+                        callback(200, str, 'html')
+
+                    } else {
+                        callback(500, undefined, 'html');
+                    }
+                });
+
+            } else {
+                callback(500, undefined, 'html')
+            }
+
+
+        });
+
+    } else {
+        callback(405, undefined, 'html')
+    }
+
+}
+
+
 // Serve public asserts
 handlers.public = (data, callback) => {
 
@@ -267,6 +355,7 @@ handlers.public = (data, callback) => {
 
  // Path for not found
  handlers.notFound = (data, callback) => {
+     console.log(data)
     console.log('hfhhfh')
     callback(403);
  };
@@ -297,7 +386,6 @@ handlers.public = (data, callback) => {
     password = typeof(password) === 'string' && password.trim().length > 0 ? password : false;
     address = typeof(address) === 'string' && address.trim().length > 3 ? address : false;
     
-    console.log(userName, firstName, lastName, email,  phone,  password, address)
 
     if(userName && firstName && lastName && email && phone && password && address){
     
@@ -370,7 +458,7 @@ handlers.public = (data, callback) => {
 
         // Verify that user is valid using the token 
         const token = typeof(data.headers.token) === 'string' ? data.headers.token : false;
-        console.log(token)
+      
         // Validate user
         handlers._tokens.verifyToken(token, userName, (tokenIsValid) => {
 
