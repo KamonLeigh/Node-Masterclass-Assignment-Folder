@@ -355,8 +355,7 @@ handlers.public = (data, callback) => {
 
  // Path for not found
  handlers.notFound = (data, callback) => {
-     console.log(data)
-    console.log('hfhhfh')
+
     callback(403);
  };
 
@@ -466,6 +465,7 @@ handlers.public = (data, callback) => {
                 _data.read('users', userName, (err, data) => {
                     if (!err && data) {
 
+                    
                         // Ensure password is not returned to user
                         delete data.hashedPassword;
                         callback(200, data);
@@ -682,7 +682,7 @@ handlers.public = (data, callback) => {
             // Hash password provided by the user and compare to the hashed on file
             const hashedPassword = helpers.hash(password);
 
-            console.log(hashedPassword)
+
 
             if(hashedPassword === userData.hashedPassword) {
                 
@@ -721,6 +721,7 @@ handlers.public = (data, callback) => {
 
     // Check to see id sent is valid
     let { id } = data.queryStringObject;
+   
 
     id = typeof(id) === 'string' && id.trim().length == 20 ? id : false;
 
@@ -780,7 +781,7 @@ handlers.public = (data, callback) => {
 
     id = typeof(id) === 'string' && id.trim().length > 0 ? id : false;
     extend = typeof(extend) === 'boolean' && extend == true ? true : false;
-    
+ 
     // Check if user provides the information to extend the lifespan of the token
     if(id && extend){
         
@@ -925,7 +926,7 @@ handlers.public = (data, callback) => {
 
                                 const menu = menuData.menu
 
-                                console.log(menu);
+                    
 
                                 const shoppingcart = {
                                     margherita,
@@ -1156,17 +1157,16 @@ handlers._orders.get  = ( (data, callback) => {
     
             handlers._tokens.verifyToken(token, userName, (tokenData) => {
 
-                console.log({tokenData})
+                
                 if(tokenData){
 
 
                     helpers.chargeCustomer(email, subTotal, ordernumber, (err) => {
-                        console.log({err})
                     
                         if(!err){
 
                             helpers.sendEmail(email, orderNumber , subTotal, (err) => {
-                                console.log(err)
+                            
                                 if(!err){
                                     callback(200)
                                 } else {

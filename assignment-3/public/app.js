@@ -19,9 +19,9 @@
  app.client.request = (headers, path, method, queryStringObject, payload, callback) => {
 
     // Set defaults
-    headers = typeof(headers) === 'object' && headers !== null ? headers : null;
+    headers = typeof(headers) === 'object' && headers !== null ? headers : {};
     path = typeof(path) === 'string' ? path : '/';
-    method = typeof(method) === 'string' && ['POST', 'GET', 'DELETE', 'PUT'].indexOf(method.toUpperCase()) > -1 ? method : 'GET';
+    method = typeof(method) === 'string' && ['POST', 'GET', 'DELETE', 'PUT'].indexOf(method.toUpperCase()) > -1 ? method.toUpperCase() : 'GET';
     queryStringObject = typeof(queryStringObject) === 'object' && queryStringObject !== null ? queryStringObject : {};
     payload = typeof(payload) === 'object' && payload !== null ? payload : {};
     callback = typeof(callback) == 'function' ? callback : false;
@@ -40,7 +40,7 @@
             }
 
             // Add the key value
-            requestUrl += queryKey + '=' + queryStringObject[queryKey];
+            requestUrl +=queryKey+'='+queryStringObject[queryKey];
 
          }
       }
@@ -49,7 +49,7 @@
       const xhr = new XMLHttpRequest();
 
       xhr.open(method, requestUrl, true);
-      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.setRequestHeader("Content-type", "application/json");
 
       // For each header sent add it to the request
       for(const headerKey in headers){
@@ -60,7 +60,7 @@
 
       // If there is a current session token set, add that as a header
       if(app.config.sessionToken){
-         xhr.setRequestHeader("token", app.config.sessionToken.id);
+         xhr.setRequestHeader("token", app.config.sessionToken.tokenId);
       }
 
       // When the request comes handle the response 
@@ -68,27 +68,27 @@
          if(xhr.readyState == XMLHttpRequest.DONE){
              var statusCode = xhr.status;
             var  responseReturned = xhr.responseText;
-         }
+         
 
          // callback if requested
-
          if(callback){
-            try{
-               const parsedResponse = JSON.parse(responseReturned)
+
+            try {
+               var parsedResponse = JSON.parse(responseReturned);
                callback(statusCode, parsedResponse);
-
-            } catch(e){
+            } catch (e) {
                callback(statusCode, false);
-
-            }
+            }  
+            
+           }
          }
       }
 
 
-      // Send the payload as string
+     // Send the payload as JSON
      var payloadString = JSON.stringify(payload);
+     xhr.send(payloadString);
 
-      xhr.send(payloadString);
  }
 
  // Bind the menu button 
@@ -112,7 +112,6 @@
  app.menuLoad = () => {
     
    // Make an api call to menu api
-
    app.client.request(undefined, 'api/menu', 'GET', undefined, undefined, (statusCode, responsePayload) => {
 
       // map throw the array and generate html
@@ -158,7 +157,10 @@
  // Log the user out then  redirect them 
  app.logUserOut = () => {
     // Get the current token id
-    const tokenId = typeof(app.config.sessionToken.id) == 'string' ? app.config.sessionToken.id : false;
+
+
+    const tokenId = typeof(app.config.sessionToken.tokenId) == 'string' ? app.config.sessionToken.tokenId : false;
+
 
     // Send the current string as a query string
     const queryStringObject = {
@@ -182,60 +184,77 @@
 
    if(document.querySelector('form')) {
 
-      document.querySelector("form").addEventListener("submit", function(e){
+      const allForms = document.querySelectorAll('form');
+
+      for(let i = 0; i < allForms.length; i++){
+
          
-         // Prevent form from submiting
-         e.preventDefault();
-         const formId = this.id;
-         const path = this.action;
-         const method = this.method.toUpperCase();
-         
-         // Hide error message if mesaage is shown from previous actions
-         document.querySelector("#"+formId+" .formError").display = "hidden";
-         
-         // Turn the inputs into the payload 
-         var payload = {};
-         var elements = this.elements;
-         
-         
-         for(let i = 0; i < elements.length; i++){
-            if(elements[i].type !== "submit"){
-               const valueOfElements = elements[i].type == "checkbox" ? elements[i].checked : elements[i].value;
-               payload[elements[i].name] = valueOfElements;
-               
-            }
-         }
-         
-           
-         
-         // Call api
-         app.client.request(undefined, path, method, undefined, payload, (statusCode, resposePayload) => {
+         allForms[i].addEventListener("submit", function(e){
             
-            console.log(statusCode);
-            // Display sn error on the form if needed 
-            if(statusCode !== 200){
-               
-               console.log('running');
-               // Try and get the error from responsePayload otherwise stick to default
-               const error = typeof(resposePayload.Error) === 'string' ? responsePayload.Error : 'An Error has occured please try again';
-               
-               // Append to the error block
-               document.querySelector("#"+formId+" .formError").innerHTML = error;
-               
-               // Change display to block inorder to show message to the user 
-               document.querySelector("#"+formId+" .formError").style.display = 'block';
-               
-            } else {
-               console.log('also runniing')
-               // If api call was sucessful, send to form response processor
-               app.formResponseProcessor(formId, payload, resposePayload);
+            // Prevent form from submiting
+            e.preventDefault();
+            var formId = this.id;
+            var path = this.action;
+            var method = this.method.toUpperCase();
+            
+            // Hide error message if mesaage is shown from previous actions
+            document.querySelector("#"+formId+" .formError").style.display = "none";
+            
+            // Hide message from previoud success
+            if(document.querySelector("#"+formId+" .formSuccess")){
+               document.querySelector("#"+formId+" .formSuccess").style.display = "none";
             }
+            
+            // Turn the inputs into the payload 
+            var payload = {};
+            var elements = this.elements;
+            
+            
+            for(let i = 0; i < elements.length; i++){
+               if(elements[i].type !== "submit"){
+                  const valueOfElements = elements[i].type == "checkbox" ? elements[i].checked : elements[i].value;
+                  if(elements[i].name =='_method'){
+                     method = valueOfElements;
+                  } else {
+                     payload[elements[i].name] = valueOfElements;
+                  }
+                  
+               }
+            }
+            
+            
+            // Call api
+            app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload) => {
+               
+               // Display sn error on the form if needed 
+               if(statusCode !== 200 ){
+                  
+                  if(statusCode == 403) {
+                     // log the user out
+                     app.logUserOut();
+                  } else {
+                        
+                     // Try and get the error from responsePayload otherwise stick to default
+                     const error = typeof(responsePayload.Error) === 'string' ? responsePayload.Error : 'An Error has occured please try again';
+                     
+                     // Append to the error block
+                     document.querySelector("#"+formId+" .formError").innerHTML = error;
+                     
+                     // Change display to block inorder to show message to the user 
+                     document.querySelector("#"+formId+" .formError").style.display = 'block';
+                  }
+                  
+               } else {
+                  // If api call was sucessful, send to form response processor
+                  app.formResponseProcessor(formId, payload, responsePayload);
+               }
+            })
+            
+            
          })
-         
-         
-      })
+      }
    }
- }
+}
 
 // Form response processor
 app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
@@ -249,10 +268,9 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
     }
 
     
-    app.client.request(undefined, 'api/tokens', 'POST', undefined ,newPayload, (newStatusCode, newResponseePayLoad) => {
+    app.client.request(undefined, 'api/tokens', 'POST', undefined ,newPayload, (newStatusCode, newResponsePayload) => {
 
 
-      console.log(newStatusCode);
       // Display an errot on the form id needed
       if(newStatusCode !== 200){
 
@@ -263,9 +281,10 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
           document.querySelector("#" + formId + " .formError").style.display = 'block';
 
       } else {
+         
          // If sucessful, set the token and redirest the user 
-         app.setSessionToken(newResponseePayLoad);
-         window.location = '/menu'
+         app.setSessionToken(newResponsePayload);
+         window.location = 'session/menu'
       }
 
     
@@ -275,9 +294,14 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
 
    if(formId == 'sessionCreate'){
       app.setSessionToken(responsePayload);
-      window.location = '/menu';
+      window.location = 'session/menu';
    }
 
+   // If form saved successfully and they have messages 
+   const formsWithSuccessMessages = ['accountEdit1', 'accountEdit2'];
+   if(formsWithSuccessMessages.indexOf(formId) > -1){
+      document.querySelector("#"+formId+" .formSuccess").style.display = 'block';
+   }
 
 };
 
@@ -298,11 +322,13 @@ app.setLoggedInClass = (add) => {
 app.getSessionToken = () => {
    const tokenString = localStorage.getItem('token');
 
+  
    if(typeof(tokenString) === 'string'){
 
       try{
          const token = JSON.parse(tokenString);
          if(typeof(token) === 'object'){
+         app.config.sessionToken = token;
             app.setLoggedInClass(true);
          } else {
             app.setLoggedInClass(false);
@@ -310,14 +336,17 @@ app.getSessionToken = () => {
 
       } catch(e){
          app.config.sessionToken = false;
-         app.setLoggedInClass(true);
+         app.setLoggedInClass(false);
       }
    }
 }
 
 //  set session in the app.config and local storage
 app.setSessionToken = (token) => {
+
   app.config.sessionToken = token;
+
+
   const tokenString = JSON.stringify(token);
   localStorage.setItem('token', tokenString);
 
@@ -330,20 +359,23 @@ app.setSessionToken = (token) => {
 
 // Renew the token
 app.renewToken = (callback) => {
+  
    const currentToken = typeof(app.config.sessionToken) == 'object' ? app.config.sessionToken : false;
+  
    if(currentToken){
       // Update the token with a expirattion 
       const payload ={
-         id: currentToken.id,
+         id: currentToken.tokenId,
          extend: true
       };
+
 
       app.client.request(undefined, 'api/tokens', 'PUT', undefined, payload, (statusCode, responsePayload) => {
          // Display an error on the form if needed 
 
          if(statusCode == 200){
             // Get the new tokem details
-            const queryStringObject = { id : currentToken.id};
+            const queryStringObject = { id : currentToken.tokenId};
             app.client.request(undefined, 'api/tokens', 'GET', queryStringObject, undefined, (statusCode, responsePayload) => {
                if(statusCode == 200){
                   app.setSessionToken(responsePayload);
@@ -384,11 +416,20 @@ app.loadDataOnPage = () => {
 
    // Get the current page from the body class 
    const bodyClasses = document.querySelector('body').classList;
-   const primayClass = typeof(bodyClasses[0]) == 'string' ? bodyClasses[0] : false;
+   const primaryClass = typeof(bodyClasses[0]) == 'string' ? bodyClasses[0] : false;
 
 
-   if(primayClass == 'accountEdit'){
+   if(primaryClass == 'accountEdit'){
       app.loadAccountEditData();
+   }
+
+   if (primaryClass == 'sessionMenu'){
+      // Bind menu button
+      app.menuLoad();
+   }
+
+   if(primaryClass == 'Index'){
+      window.location = "/";
    }
 
 
@@ -396,15 +437,43 @@ app.loadDataOnPage = () => {
 
 app.loadAccountEditData = () => {
    // Get the user data from the token otherwise logout
-   const userName = typeof(app.config.sessionToken.userName) == 'string' ? app.config.sessionToken.config : false;
+   const userName = typeof(app.config.sessionToken.userName) == 'string' ? app.config.sessionToken.userName : false;
 
    if(userName){
+      // Fetch the user 
+      const queryStringObject = {
+         username: userName
+      }
+
+      // Make the app call and obtain the user information
+      app.client.request(undefined, 'api/users', 'GET', queryStringObject, undefined, (statusCode, responsePayload) => {
+      
+         if(statusCode == 200) {
+
+            // Put the data into the form
+            document.querySelector('#accountEdit1 .firstNameInput').value = responsePayload.firstName;
+            document.querySelector('#accountEdit1 .lastNameInput').value = responsePayload.lastName;
+            document.querySelector('#accountEdit1 .emailInput').value = responsePayload.email;
+            document.querySelector('#accountEdit1 .phoneInput').value = responsePayload.phone
+            document.querySelector('#accountEdit1 .addressInput').value = responsePayload.address;
+
+            // Put the hidden username into both forms
+            const hiddenUserNameInputs = document.querySelectorAll('input.hiddenUserName');
+
+            for(let i = 0; i < hiddenUserNameInputs.length; i++){
+               hiddenUserNameInputs[i].value = responsePayload.userName;
+            }
+         } else {
+            // If the request comes back with somrthing other than  200 we log the user out
+            app.logUserOut();
+         }
+      });
 
    } else {
       // If the request comes back as something other than 200, log the user our (on the assumption that the api is temporarily down or the users token is bad)
       app.logUserOut()
    }
-}
+};
 
 
 // Init (bootstrapping)
@@ -421,8 +490,6 @@ app.init = () => {
    // Bind logout button
    app.bindLogoutButton();
 
-   // Bind menu button
-   app.menuLoad();
 
    // Load Data on page 
    app.loadDataOnPage();

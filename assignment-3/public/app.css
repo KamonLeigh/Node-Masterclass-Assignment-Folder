@@ -214,3 +214,18 @@ table {
 
 
 
+
+
+.formSuccess {
+    display: none;
+    background-color: #217844;
+    font-style: italic;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin: 0 0 15px 0;
+    text-align: center;
+    border-color: #35c06d;
+    border-width: 2px;
+    border-style: solid;
+}

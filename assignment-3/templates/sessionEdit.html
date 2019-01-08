@@ -3,31 +3,32 @@
 <hr/>
 <div class="formWrapper">
     <form id="accountEdit1" action="/api/users" method="POST">
+        <input type="hidden" name="_method" value="PUT" />
         <div class="formError"></div>
         <div class="formSuccess">Your Changes Have Been Saved</div>
         <label for="userName">
             User Name
-            <input type="text" name="displayUserName" placeholder="johnsmith" disabled>
+            <input class="hiddenUserName" type="text" name="userName" placeholder="johnsmith" disabled>
         </label>
         <label for="firstName">
             First Name
-            <input type="text" name="firstName" placeholder="John">
+            <input class="firstNameInput" type="text" name="firstName" placeholder="John">
         </label>
         <label for="lastName">
             Last Name
-            <input type="text" name="lastName" placeholder="smith">
+            <input class="lastNameInput" type="text" name="lastName" placeholder="smith">
         </label>
         <label for="email">
             Email
-            <input type="email" name="email" placeholder="John@example.com">
+            <input class="emailInput" type="email" name="email" placeholder="John@example.com">
         </label>
         <label for="phone">
             Phone
-            <input type="text" name="phone" placeholder="(415) 123-4567" />
+            <input class="phoneInput" type="text" name="phone" placeholder="(415) 123-4567" />
         </label>
         <label for="address">
             Address
-            <input type="text" name="address" placeholder="1 Borwick Grove" />
+            <input class="addressInput" type="text" name="address" placeholder="1 Borwick Grove" />
         </label>
         <div class="inputWrapper ctaWrapper">
             <button type="submit" class="cta blue">Get Started</button>
@@ -38,8 +39,13 @@
 
 <div class="formWrapper">
     <form id="accountEdit2" action="api/user" method="POST">
+        <input type="hidden" name="_method" value="PUT" />
         <div class="formError"></div>
         <div class="formSuccess">Your Changes Have Been Saved</div>
+        <label for="userName">
+            User Name
+            <input class="hiddenUserName" type="text" name="userName" placeholder="johnsmith" disabled>
+        </label>
         <label for="password">
             choose a new password
             <input type="password" name="password" placeholder="Make it a good one" />
