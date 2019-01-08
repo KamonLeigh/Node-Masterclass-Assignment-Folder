@@ -37,6 +37,9 @@
     </form>
 </div>
 
+<hr/>
+<h2>Delete Your Account</h2>
+
 <div class="formWrapper">
     <form id="accountEdit2" action="api/user" method="POST">
         <input type="hidden" name="_method" value="PUT" />
@@ -52,6 +55,21 @@
         </label>
         <div class="inputWrapper ctaWrapper">
             <button type="submit" class="cta blue">Get Started</button>
+        </div>
+    </form>
+</div>
+
+<div class="formWrapper">
+    <form id="accountEdit3" action="api/user" method="DELETE">
+        <input type="hidden" name="_method" value="DELETE">
+        <div class="formError">
+        <label for="userName">
+            User Name
+            <input class="hiddenUserName" name="userName" placeholder="johnsmith" type="text" disabled>
+        </label>
+         <div class="inputWrapper ctaWrapper">
+             <button type="submit" class="cta blue">Get Started</button>
+        </div>
         </div>
     </form>
 </div>

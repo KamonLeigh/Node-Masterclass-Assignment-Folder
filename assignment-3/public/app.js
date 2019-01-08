@@ -221,10 +221,14 @@
                   
                }
             }
+
+            // if method is delete payload should be querystring instead 
+            // If the method is DELETE, the payload should be a queryStringObject instead
+             const  queryStringObject = method == 'DELETE' ? payload : {};
             
             
             // Call api
-            app.client.request(undefined, path, method, undefined, payload, (statusCode, responsePayload) => {
+            app.client.request(undefined, path, method, queryStringObject, payload, (statusCode, responsePayload) => {
                
                // Display sn error on the form if needed 
                if(statusCode !== 200 ){
@@ -302,6 +306,13 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
    if(formsWithSuccessMessages.indexOf(formId) > -1){
       document.querySelector("#"+formId+" .formSuccess").style.display = 'block';
    }
+
+   // If user deleted their account redirect them to the delete
+   if(formId="accountEdit3"){
+      app.logUserOut(false);
+      window.location('/account/delete');
+   }
+
 
 };
 
