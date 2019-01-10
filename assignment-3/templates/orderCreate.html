@@ -1,0 +1,30 @@
+<h1>Place Your Order</h1>
+<h2>Check out the details below</h2>
+<a class="backButton" href="/">Home</a>
+<hr/>
+
+<div class="formWrapper">
+    <form id="orderCreate" action="/api/shoppingcart" method="POST">
+        <input type="hidden" name="_method" value="POST" />
+        <div class="formError"></div>
+        <label>
+            Margherita £7
+        <input type="number" name="margherita" min="0" step="1" />
+        </label>
+        <label>
+            Pepperoni £10
+            <input type="number" name="pepperoni" min="0" step="1" />
+        </label>
+        <label>
+            Meatball £10
+            <input type="number" name="meatball" min="0" step="1" />
+        </label>
+        <label>
+            Aubergine £7 
+        <input type="number" name="aubergine" min="0" step="1" />
+        </label>
+        <div class="inputWrapper ctaWrapper">
+            <button type="submit" class="cta blue">Add to Cart</button>
+        </div>
+    </form>
+</div>

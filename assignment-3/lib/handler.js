@@ -326,6 +326,38 @@ handlers.accountDelete = (data, callback) => {
 }
 
 
+// Create a new order
+handlers.orderCreate = (data, callback) => {
+  // Only procedd if method is a GET method
+  if (data.method === "get") {
+    // Prepare data for intepolation
+    const templateData = {
+      "head.title": "Order Pizza",
+      "body.class": "orderCreate"
+    };
+
+    helpers.getTemplate("orderCreate", templateData, (err, str) => {
+      if (!err && str) {
+        // Add the header to the html file
+        helpers.addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            // Send html file back to user
+            callback(200, str, "html");
+          } else {
+            callback(500, undefined, "html");
+          }
+        });
+      } else {
+        callback(500, undefined, "html");
+      }
+    });
+  } else {
+    callback(405, undefined, "html");
+  }
+};
+
+
+
 
 // Serve public asserts
 handlers.public = (data, callback) => {
@@ -923,6 +955,7 @@ handlers.public = (data, callback) => {
     
     // List all the accepted methods
     const acceptableMethods = ['post', 'get', 'put', 'delete'];
+    console.log(data)
     if(!acceptableMethods.includes(data.method)) return callback(405);
     handlers._shoppingcart[data.method](data, callback)
 
@@ -936,10 +969,10 @@ handlers.public = (data, callback) => {
 
     userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
 
-    margherita = typeof(margherita) === 'number' && margherita > 0 ? margherita : false;
-    pepperoni = typeof(pepperoni) === 'number' && pepperoni > 0  ? pepperoni : false;
-    meatball = typeof(meatball) === 'number' && meatball > 0 ? meatball : false;
-    aubergine = typeof(aubergine) === 'number' && aubergine > 0 ? aubergine : false;
+    margherita = typeof (parseInt(margherita) == NaN ? 0 : parseInt(margherita)) === 'number' && margherita > 0 ? margherita : false;
+    pepperoni = typeof (parseInt(pepperoni) == NaN ? 0 : parseInt(margherita)) === 'number' && pepperoni > 0 ? pepperoni : false;
+    meatball = typeof (parseInt(meatball) == NaN ? 0 : parseInt(margherita)) === 'number' && meatball > 0 ? meatball : false;
+    aubergine = typeof (parseInt(aubergine) == NaN ? 0 : parseInt(margherita)) === 'number' && aubergine > 0 ? aubergine : false;
 
     if(userName){
 

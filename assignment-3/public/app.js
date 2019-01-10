@@ -208,23 +208,35 @@
             // Turn the inputs into the payload 
             var payload = {};
             var elements = this.elements;
-            
-            
-            for(let i = 0; i < elements.length; i++){
-               if(elements[i].type !== "submit"){
-                  const valueOfElements = elements[i].type == "checkbox" ? elements[i].checked : elements[i].value;
-                  if(elements[i].name =='_method'){
-                     method = valueOfElements;
-                  } else {
-                     payload[elements[i].name] = valueOfElements;
-                  }
-                  
-               }
-            }
 
+              
+
+            
+            
+
+               for(let i = 0; i < elements.length; i++){
+                  if(elements[i].type !== "submit"){
+                     const valueOfElements = elements[i].type == "checkbox" ? elements[i].checked : elements[i].value;
+                     if(elements[i].name =='_method'){
+                        method = valueOfElements;
+                     } else {
+                        payload[elements[i].name] = valueOfElements;
+                     }
+                     
+                  }
+               }
+               
+            
             // if method is delete payload should be querystring instead 
             // If the method is DELETE, the payload should be a queryStringObject instead
              const  queryStringObject = method == 'DELETE' ? payload : {};
+
+
+             // Handle adding username to payload if required
+
+             if(path.includes('shopping')){
+                payload.userName = app.config.sessionToken.userName;
+             }
             
             
             // Call api
@@ -308,9 +320,17 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
    }
 
    // If user deleted their account redirect them to the delete
-   if(formId="accountEdit3"){
+   if(formId=="accountEdit3"){
       app.logUserOut(false);
-      window.location('/account/delete');
+      window.location = '/account/delete';
+   }
+
+
+   // If the user order reaches the shopping cart redirecr user to that page 
+   if(formId =="orderCreate"){
+
+      window.location = '/';
+
    }
 
 

@@ -169,6 +169,7 @@
      'session/create': handlers.sessionCreate,
      'session/delete': handlers.sessionDelete,
      'session/menu': handlers.sessionMenu,
+     'order/Create': handlers.orderCreate,
      'api/menu': handlers.menuList,
      'api/users' : handlers.users,
      'api/tokens' : handlers.tokens,
