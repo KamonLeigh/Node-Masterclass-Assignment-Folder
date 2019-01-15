@@ -230,7 +230,7 @@ table {
     border-style: solid;
 }
 
-.backButton {
+.backButton, .order {
     margin: 0 auto;
     text-decoration: none;
     text-align:center;
@@ -245,4 +245,12 @@ table {
     font-weight: bold;
     margin-top: 5px;
 
+}
+
+#noOrdersMessage{
+    display: none;
+}
+
+#createOrder {
+    display: none;
 }

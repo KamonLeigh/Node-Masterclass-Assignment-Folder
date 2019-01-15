@@ -413,6 +413,50 @@ handlers.public = (data, callback) => {
 }
 
 
+
+// Display contents from shopping cart
+handlers.shoppingCart = (data, callback) => {
+
+    // Only procedd if method is a GET method
+    if (data.method === 'get') {
+
+        // Prepare data for intepolation
+        const templateData = {
+
+            'head.title': 'Orders are displayed below',
+            'body.class': 'shoppingCart'
+        }
+
+        helpers.getTemplate('shoppingCart', templateData, (err, str) => {
+
+            if (!err && str) {
+                // Add the header to the html file
+                helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                    if (!err && str) {
+
+                        // Send html file back to user 
+                        callback(200, str, 'html')
+
+                    } else {
+                        callback(500, undefined, 'html');
+                    }
+                });
+
+            } else {
+                callback(500, undefined, 'html')
+            }
+
+
+        });
+
+    } else {
+        callback(405, undefined, 'html')
+    }
+
+}
+
+
 /*
  * JSON API
  *
@@ -955,7 +999,6 @@ handlers.public = (data, callback) => {
     
     // List all the accepted methods
     const acceptableMethods = ['post', 'get', 'put', 'delete'];
-    console.log(data)
     if(!acceptableMethods.includes(data.method)) return callback(405);
     handlers._shoppingcart[data.method](data, callback)
 
@@ -976,11 +1019,13 @@ handlers.public = (data, callback) => {
 
     if(userName){
 
+          
+
         // proceed if at least one is true
         if (margherita || pepperoni || meatball || aubergine) {
 
     
-
+              
             // verify that the token is valid
             const token = typeof (data.headers.token) === 'string' ? data.headers.token : false;
 
@@ -989,84 +1034,121 @@ handlers.public = (data, callback) => {
 
                 if(tokenIsValid){
                    
+                      
                     // Look up the user 
                     _data.read('users', userName,(err, userData) =>{
                         
                         if(!err && userData){
-                            
 
-                            // get the menu 
-                            _data.read('menu', 'menu', (err, menuData) => {
+                            const userOrders = typeof(userData.userOrders) === 'object' && userData.userOrders instanceof Array ? userData.userOrders : [];
 
-                            if(!err && menuData){
+                           
+                            // Verify the user has less than three oders
+                            if(userOrders.length < config.maxOrders){
+
                                 
-                                const order = [];
-
-                                const menu = menuData.menu
-
-                    
-
-                                const shoppingcart = {
-                                    margherita,
-                                    pepperoni,
-                                    aubergine,
-                                    meatball
-                                }
-
                                
-                                menu.forEach((pizza) => {
-
-                                    if(shoppingcart[pizza.name]){
-
-                                        const total = pizza.price * shoppingcart[pizza.name];
-                                        
-                                        // Make object and push into order array
-                                        const pizzaTotal = {
-                                            pizza: pizza.name,
-                                            total
-                                        }
-
-                                        order.push(pizzaTotal);
-                                    }
-
-                                   
-                                })
-
-                                // Use reduce to get the total
-                                const subTotal  = order.reduce((total, pizza) => {
-
-                                    return total += pizza.total
-                                }, 0);
-
-                                // generate order number
-                                const orderNumber = helpers.createRandomString(20)
-
+                                // Create an array of orders
                                 
-
-                                    const orderObject = {
-                                        orderNumber,
-                                        userName: userData.userName,
-                                        email: userData.email,
-                                        subTotal,
-                                        order
-                                    }
-
-                                    // Write order to file 
-                                    _data.create('shoppingcart', orderNumber, orderObject,(err) =>{
-
-                                         if (err) return callback(500, {
-                                             Error: 'Could not create the new token'
-                                         });
-                                         callback(200, orderObject);
-                                    })
-
+                                // get the menu 
+                                _data.read('menu', 'menu', (err, menuData) => {
                                     
+                                    if(!err && menuData){
+                                          
+                                        const order = [];
+                                        
+                                        const menu = menuData.menu
+                                        
+                                        
+                                        
+                                        const shoppingcart = {
+                                            margherita,
+                                            pepperoni,
+                                            aubergine,
+                                            meatball
+                                        }
+                                        
+                                        
+                                        menu.forEach((pizza) => {
+                                            
+                                            if(shoppingcart[pizza.name]){
+                                                
+                                                const total = pizza.price * shoppingcart[pizza.name];
+                                                
+                                                // Make object and push into order array
+                                                const pizzaTotal = {
+                                                    pizza: pizza.name,
+                                                    total
+                                                }
+                                                
+                                                order.push(pizzaTotal);
+                                            }
+                                            
+                                            
+                                        })
+                                        
+                                        // Use reduce to get the total
+                                        const subTotal  = order.reduce((total, pizza) => {
+                                            
+                                            return total += pizza.total
+                                        }, 0);
+                                          
+                                        // generate order number
+                                        const orderNumber = helpers.createRandomString(20);
+                                        
+                                        // Push the orderNumber to the order array in user object
+                                        
+                                          
+                                        
+                                        const orderObject = {
+                                            orderNumber,
+                                            userName: userData.userName,
+                                            email: userData.email,
+                                            subTotal,
+                                            order
+                                        }
+                                          
+                                           console.log({
+                                               userName,
+                                               userData,
+                                               orderObject
+
+                                           });
+                                       
+                                        
+                                        // Write order to file 
+                                        _data.create('shoppingcart', orderNumber, orderObject,(err) =>{
+                                              
+                                            if (err) return callback(500, {Error: 'Could not create the new token'});
+                                             // Update user object
+                                             userData.userOrders = userOrders;
+                                             userData.userOrders.push(orderNumber);
+
+                                            
+
+                                             // Save the new user data
+                                             _data.update('users', userName, userData, (err) =>{
+                                                 if(!err){
+                                                     
+                                                     // Return the data about the new order
+                                                     callback(200, orderObject);
+                                                 } else {
+                                                     callback(500, {Error: 'Could not update user with the new order'})
+                                                 }
+
+                                             });
+                                        })
+                                        
                                     
                                     } else {
-
-                                       callback(500, {Error: 'Sytem error unable to complete order'})
+                                          
+                                        callback(500, {Error: 'Sytem error unable to complete order'})
                                     }
                                 })
+                            } else {
+                                callback(500, 'Could not create order')
+                                  
+                            }
 
                             } else {
                                 callback(400, {Error: 'Specified user does not exist'})

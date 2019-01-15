@@ -153,7 +153,7 @@
             res.writeHead(statusCode);
             res.end(payloadString);
 
-            //console.log(`Returning this response ${statusCode} ${payloadString}`)
+            console.log(`Returning this response ${statusCode}`)
         });
 
     });
@@ -170,6 +170,7 @@
      'session/delete': handlers.sessionDelete,
      'session/menu': handlers.sessionMenu,
      'order/Create': handlers.orderCreate,
+     'shopping/Cart': handlers.shoppingCart,
      'api/menu': handlers.menuList,
      'api/users' : handlers.users,
      'api/tokens' : handlers.tokens,

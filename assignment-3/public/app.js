@@ -463,6 +463,10 @@ app.loadDataOnPage = () => {
       window.location = "/";
    }
 
+   if (primaryClass == 'shoppingCart'){
+      app.loadShoppingCartPage();
+   }
+
 
 }
 
@@ -505,6 +509,84 @@ app.loadAccountEditData = () => {
       app.logUserOut()
    }
 };
+
+
+// Load the order page
+
+app.loadShoppingCartPage = () => {
+   // Get the userName from the token
+
+   const userName = typeof(app.config.sessionToken.userName) === 'string' ? app.config.sessionToken.userName : false;
+
+   if(userName) {
+      // fetch the user data
+      const queryStringObject ={
+         username: userName
+      }
+
+      app.client.request(undefined, 'api/users', 'GET', queryStringObject, undefined, (statusCode, responsePayload) => {
+         if(statusCode == 200){
+
+            const allOrders = typeof(responsePayload.userOrders) === 'object' && responsePayload.userOrders instanceof Array && responsePayload.userOrders.length > 0 ? responsePayload.userOrders : [];
+
+            if(allOrders.length > 0){
+
+               //Loop through all the elements in the array and display in the table
+               allOrders.forEach((order) => {
+
+                  console.log(order)
+
+                  // Contruct the querystring object to be sent off
+                  const newQueryStringObject = { ordernumber: order }
+
+                  app.client.request(undefined, 'api/shoppingcart', 'GET', newQueryStringObject, undefined, (statusCode, responsePayload) => {
+
+                     if(statusCode == 200) {
+
+                     let table = document.querySelector('#shoppingCartTable');
+                     let tr = table.insertRow(-1);
+                     tr.classList.add('checkRow');
+                     let td0 = tr.insertCell(0);
+                     let td1 = tr.insertCell(1);
+                     let td2= tr.insertCell(2);
+                     td0.innerHTML = responsePayload.orderNumber;
+                     td1.innerHTML = "£" + responsePayload.subTotal;
+                     td2.innerHTML = '<a href="/shoppingcart/edit?ordernumber=' + responsePayload.orderNumber + '">View / Edit / Delete</a>';
+
+
+                     } else {
+                        console.log("Error trying to load shopping cart", order);
+                     }
+                  
+                  });
+
+               });
+
+               if(allOrders.length < 3){
+                  // Show the create 
+                  document.querySelector("#createOrder").display = 'block';
+               }
+
+            } else {
+
+               // Show that 'you have made an order'
+               document.querySelector("#noOrdersMessage").display = 'table-row';
+   
+               document.querySelector("#createOrder").display = 'block';
+
+            }
+
+         } else {
+
+            // If we receive a user request othet than 200 assume that our end point is down and log the user out
+            app.logUserOut();
+         }
+      });
+
+   } else {
+      app.logUserOut();
+   }
+}
 
 
 // Init (bootstrapping)
