@@ -564,15 +564,15 @@ app.loadShoppingCartPage = () => {
 
                if(allOrders.length < 3){
                   // Show the create 
-                  document.querySelector("#createOrder").display = 'block';
+                  document.getElementById("createOrder").style.display = 'block';
                }
 
             } else {
 
                // Show that 'you have made an order'
-               document.querySelector("#noOrdersMessage").display = 'table-row';
+               document.querySelector("#noOrdersMessage").style.display = 'table-row';
    
-               document.querySelector("#createOrder").display = 'block';
+               document.querySelector("#createOrder").style.display = 'block';
 
             }
 
