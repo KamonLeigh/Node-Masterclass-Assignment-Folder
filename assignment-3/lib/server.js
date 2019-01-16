@@ -169,6 +169,7 @@
      'session/create': handlers.sessionCreate,
      'session/delete': handlers.sessionDelete,
      'session/menu': handlers.sessionMenu,
+     'order/edit':handlers.orderEdit,
      'order/Create': handlers.orderCreate,
      'shopping/Cart': handlers.shoppingCart,
      'api/menu': handlers.menuList,

@@ -358,6 +358,48 @@ handlers.orderCreate = (data, callback) => {
 
 
 
+ handlers.orderEdit = (data, callback) => {
+
+     // Only procedd if method is a GET method
+     if (data.method === 'get') {
+
+         // Prepare data for intepolation
+         const templateData = {
+
+             'head.title': 'View Order',
+             'body.class': 'orderEdit'
+         }
+
+         helpers.getTemplate('orderEdit', templateData, (err, str) => {
+
+             if (!err && str) {
+                 // Add the header to the html file
+                 helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                     if (!err && str) {
+
+                         // Send html file back to user 
+                         callback(200, str, 'html')
+
+                     } else {
+                         callback(500, undefined, 'html');
+                     }
+                 });
+
+             } else {
+                 callback(500, undefined, 'html')
+             }
+
+
+         });
+
+     } else {
+         callback(405, undefined, 'html')
+     }
+
+ }
+
+
 
 // Serve public asserts
 handlers.public = (data, callback) => {

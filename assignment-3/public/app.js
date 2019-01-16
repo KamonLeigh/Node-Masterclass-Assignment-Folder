@@ -65,9 +65,11 @@
 
       // When the request comes handle the response 
       xhr.onreadystatechange = () => {
+         console.log({xhr});
          if(xhr.readyState == XMLHttpRequest.DONE){
+            
              var statusCode = xhr.status;
-            var  responseReturned = xhr.responseText;
+            var responseReturned = xhr.responseText;
          
 
          // callback if requested
@@ -334,6 +336,7 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
    }
 
 
+
 };
 
 
@@ -467,6 +470,10 @@ app.loadDataOnPage = () => {
       app.loadShoppingCartPage();
    }
 
+   if(primaryClass == 'orderEdit'){
+      app.loadShoppingCartEdit();
+   }
+
 
 }
 
@@ -551,7 +558,7 @@ app.loadShoppingCartPage = () => {
                      let td2= tr.insertCell(2);
                      td0.innerHTML = responsePayload.orderNumber;
                      td1.innerHTML = "£" + responsePayload.subTotal;
-                     td2.innerHTML = '<a href="/shoppingcart/edit?ordernumber=' + responsePayload.orderNumber + '">View / Edit / Delete</a>';
+                     td2.innerHTML = '<a href="/order/edit?ordernumber=' + responsePayload.orderNumber + '">View / Edit / Delete</a>';
 
 
                      } else {
@@ -585,6 +592,63 @@ app.loadShoppingCartPage = () => {
 
    } else {
       app.logUserOut();
+   }
+}
+
+// Load the orders on the page
+app.loadShoppingCartEdit = () => {
+   // Get the order number from the query string, if none is found then redirect back to dashboard
+   const ordernumber = typeof(window.location.href.split('=')[1]) == 'string' && window.location.href.split('=')[1].length > 0 ? window.location.href.split('=')[1] : false;
+   console.log({ordernumber})
+   if(ordernumber){
+
+      // Construct the query string object
+      const queryStringObject = { ordernumber };
+
+      // Fetch the order data
+      app.client.request(undefined, 'api/shoppingcart', 'GET', queryStringObject, undefined, (statusCode, responsePayload) => {
+        
+         if(statusCode == 200){
+
+            // Put the hidden ordernumbers into both forms 
+            const hiddenOrderNumberInputs = document.querySelectorAll('input.hiddenIdInput');
+            
+            for(let i = 0; i < hiddenOrderNumberInputs.length; i++){
+               hiddenOrderNumberInputs[i].value = responsePayload.orderNumber;
+            }
+
+            const orders = responsePayload.order;
+            console.log(orders)
+         
+            let orderObject = {};
+
+            orders.forEach((order) => {
+              const orderItem = {[order.pizza] : order.total};
+
+              orderObject = { ...orderObject, ...orderItem }
+
+            });
+         
+
+            // Put the data in the form
+            document.querySelector('.displayOrderNumber').value = responsePayload.orderNumber;
+            document.querySelector('.displayOrderMargherita').value = orderObject.margherita  === undefined ? 0 : orderObject.margherita / 7 ;
+            document.querySelector('.displayOrderPepperoni').value = orderObject.pepperoni === undefined ? 0 : orderObject.pepperoni / 10;
+            document.querySelector('.displayOrderMeatball').value = orderObject.meatball === undefined ? 0 :  orderObject.meatball / 10;
+            document.querySelector('.displayOrderAubergine').value = orderObject.aubergine === undefined ? 0 :  orderObject.aubergine / 7;
+
+
+
+
+         } else {
+            // If the request comes back as something than 200, redirect to the shoppingcart
+            window.location = '/shopping/Cart'
+         }
+      })
+
+   } else {
+      window.location = '/shopping/Cart';
+
    }
 }
 
