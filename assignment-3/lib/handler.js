@@ -1150,13 +1150,7 @@ handlers.shoppingCart = (data, callback) => {
                                             order
                                         }
                                           
-                                           console.log({
-                                               userName,
-                                               userData,
-                                               orderObject
-
-                                           });
-                                       
+                                    
                                         
                                         // Write order to file 
                                         _data.create('shoppingcart', orderNumber, orderObject,(err) =>{
@@ -1315,6 +1309,150 @@ handlers.shoppingCart = (data, callback) => {
     } else {
     callback(400, {'Error': 'Missing required field.'});
     }
+
+
+ }
+
+ handlers._shoppingcart.put = (data, callback) => {
+
+     // Obtain order number from the query string 
+     const ordernumber = data.queryStringObject.ordernumber;
+
+     // Emsure the strings fits criteria 
+     const orderNumber = typeof (ordernumber) === 'string' && ordernumber.trim().length === 20 ? ordernumber : false;
+
+     // destruct and check for the required keys 
+    let { margherita, pepperoni, meatball, aubergine, userName }  = data.payload;
+
+    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+
+    margherita = typeof (parseInt(margherita) == NaN ? 0 : parseInt(margherita)) === 'number' && margherita > 0 ? margherita : false;
+    pepperoni = typeof (parseInt(pepperoni) == NaN ? 0 : parseInt(margherita)) === 'number' && pepperoni > 0 ? pepperoni : false;
+    meatball = typeof (parseInt(meatball) == NaN ? 0 : parseInt(margherita)) === 'number' && meatball > 0 ? meatball : false;
+    aubergine = typeof (parseInt(aubergine) == NaN ? 0 : parseInt(margherita)) === 'number' && aubergine > 0 ? aubergine : false;
+
+
+    if(orderNumber) {
+
+        if(margherita || pepperoni || meatball || aubergine){
+
+         // check if user has valid token and we can send back the data
+         const token = typeof (data.headers.token) === 'string' && data.headers.token.trim().length == 20 ? data.headers.token : false;
+        
+         // Look up user using ordernumber
+
+         _data.read('shoppingcart', orderNumber, (err, cartData) => {
+
+            if(!err && cartData) {
+
+                handlers._tokens.verifyToken(token, cartData.userName, (tokenData) => {
+
+                    if(tokenData){
+
+                        // Get the menu an contruct the updated cart
+                        _data.read('menu', 'menu', (err, menuData) => {
+
+                            if(!err && menuData){
+
+                                const order = [];
+
+                                const menu = menuData.menu;
+                               
+
+                                const shoppingCart = {
+                                    margherita,
+                                    pepperoni,
+                                    meatball,
+                                    aubergine
+                                }
+
+
+
+                               
+                                menu.forEach((pizza) => {
+
+                                    if(shoppingCart[pizza.name]){
+
+                                        const total = shoppingCart[pizza.name] * pizza.price;
+
+                                        const pizzaTotal = {
+                                            pizza : pizza.name,
+                                            total
+                                        }
+
+                                        order.push(pizzaTotal);
+                                    }
+
+                                    debugger 
+
+
+                                });
+
+                             
+
+                                // Calculate total
+                                const subTotal = order.reduce((total, pizza) => {
+                                    return total += total + pizza.total;
+                                }, 0)
+
+
+
+                                // Constrct the new order object
+                                const newOrderObject = {
+                                    order,
+                                    subTotal
+                                }
+
+
+                                // Update cardData
+                                cartData.subTotal = newOrderObject.subTotal;
+                                cartData.order = newOrderObject.order;
+
+
+                                // Write updata back to file;
+                                _data.update('shoppingcart', cartData.orderNumber, cartData, (err) => {
+                                    
+                                    if(!err){
+                                        callback(200);
+                                    } else {
+                                        callback(500, {Error: 'Could not up date order'});
+                                    }
+
+                                });
+
+                            } else {
+
+                                callback(500, {Error: 'Could not create order'})
+                            }
+
+
+                        });
+
+                    } else {
+
+                        callback(403);
+                    }
+
+                });
+
+            } else {
+
+                callback(403);
+
+            }
+         });
+
+        } else {
+
+            callback(400, {'Error': 'Order could not be updated'})
+        }
+
+    } else {
+
+       callback(400, {'Error': 'Missing required field.'});
+
+    }
+
 
 
  }
