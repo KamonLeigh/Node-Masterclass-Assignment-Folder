@@ -231,7 +231,7 @@
             
             // if method is delete payload should be querystring instead 
             // If the method is DELETE, the payload should be a queryStringObject instead
-             const  queryStringObject = method == 'DELETE' ? payload : {};
+             let  queryStringObject = method == 'DELETE' ? payload : {};
 
 
              // Handle adding username to payload if required
@@ -239,6 +239,15 @@
              if(path.includes('shopping')){
                 payload.userName = app.config.sessionToken.userName;
              }
+
+             if(path.includes('shopping') && method == 'PUT' ) {
+               queryStringObject = {ordernumber: payload.ordernumber}
+             }
+
+              if(path.includes('shopping') && method == 'DELETE' ) {
+               queryStringObject = {ordernumber: payload.uid}
+             }
+            
             
             
             // Call api
@@ -335,7 +344,20 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
 
    }
 
+   if (formId == "orderEdit1") {
 
+      window.location = '/shopping/Cart';
+
+   }
+
+   if (formId == "orderEdit2") {
+
+      window.location = '/shopping/Cart';
+
+   }
+
+
+   
 
 };
 

@@ -1238,6 +1238,8 @@ handlers.shoppingCart = (data, callback) => {
                         _data.delete('shoppingcart', orderNumber, (err) => {
 
                             if(!err) {
+
+                                //@TODO need to update array in users to reflect changes to order
                                 callback(200)
                             } else {
 
@@ -1389,12 +1391,15 @@ handlers.shoppingCart = (data, callback) => {
                                 });
 
                              
+                                debugger 
 
                                 // Calculate total
                                 const subTotal = order.reduce((total, pizza) => {
-                                    return total += total + pizza.total;
+                                    return total +=  pizza.total;
                                 }, 0)
 
+
+                                debugger 
 
 
                                 // Constrct the new order object
@@ -1407,6 +1412,8 @@ handlers.shoppingCart = (data, callback) => {
                                 // Update cardData
                                 cartData.subTotal = newOrderObject.subTotal;
                                 cartData.order = newOrderObject.order;
+
+                                debugger 
 
 
                                 // Write updata back to file;
