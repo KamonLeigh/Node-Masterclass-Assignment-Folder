@@ -1226,21 +1226,66 @@ handlers.shoppingCart = (data, callback) => {
 
             if(!err && shoppingcartData){
 
+
+                debugger 
+
                 // Verify the user using the tokens 
                 const token = typeof(data.headers.token) === 'string' && data.headers.token.trim().length == 20 ? data.headers.token : false;
 
+                debugger
                 // Check to see whether user is logged in  
                 handlers._tokens.verifyToken(token, shoppingcartData.userName, (tokenData) => {
 
                     if(tokenData){
 
+                        
                         // Delete the order in the shopping card 
                         _data.delete('shoppingcart', orderNumber, (err) => {
 
                             if(!err) {
 
+                                debugger
+
                                 //@TODO need to update array in users to reflect changes to order
-                                callback(200)
+                                _data.read('users', shoppingcartData.userName, (err, userData) => {
+
+                                    if(!err, userData){
+
+                                        debugger
+
+                                        // Update order array
+                                        const newUserOrders = userData.userOrders.filter((userOrder) => {
+
+                                            return userOrder !== orderNumber;
+                                        });
+
+                                        debugger
+                                        userData.userOrders = newUserOrders;
+
+                                        debugger
+
+
+
+                                        // Update user
+                                        _data.update('users', shoppingcartData.userName, userData, (err) => {
+                                            debugger
+                                            
+                                            if(!err) {
+                                                debugger
+                                                callback(200)
+                                            } else {
+                                                debugger
+                                                callback(500, {Error: 'could not updata user profile'})
+                                            }
+                                        })
+
+                                    } else {
+
+                                        callback(500, {Error: 'could not delete order'})
+                                    }
+
+
+                                });
                             } else {
 
                                 callback(500, {Error: 'could not delete order'})
@@ -1385,22 +1430,15 @@ handlers.shoppingCart = (data, callback) => {
                                         order.push(pizzaTotal);
                                     }
 
-                                    debugger 
 
 
                                 });
 
-                             
-                                debugger 
-
+    
                                 // Calculate total
                                 const subTotal = order.reduce((total, pizza) => {
                                     return total +=  pizza.total;
                                 }, 0)
-
-
-                                debugger 
-
 
                                 // Constrct the new order object
                                 const newOrderObject = {
@@ -1408,12 +1446,10 @@ handlers.shoppingCart = (data, callback) => {
                                     subTotal
                                 }
 
-
                                 // Update cardData
                                 cartData.subTotal = newOrderObject.subTotal;
                                 cartData.order = newOrderObject.order;
 
-                                debugger 
 
 
                                 // Write updata back to file;
