@@ -496,6 +496,10 @@ app.loadDataOnPage = () => {
       app.loadShoppingCartEdit();
    }
 
+   if(primaryClass == 'orderComplete'){
+      app.comfirmOrder();
+   }
+
 
 }
 
@@ -563,8 +567,6 @@ app.loadShoppingCartPage = () => {
                //Loop through all the elements in the array and display in the table
                allOrders.forEach((order) => {
 
-                  console.log(order)
-
                   // Contruct the querystring object to be sent off
                   const newQueryStringObject = { ordernumber: order }
 
@@ -578,30 +580,72 @@ app.loadShoppingCartPage = () => {
                      let td0 = tr.insertCell(0);
                      let td1 = tr.insertCell(1);
                      let td2= tr.insertCell(2);
+                     let td3 = tr.insertCell(3)
                      td0.innerHTML = responsePayload.orderNumber;
                      td1.innerHTML = "£" + responsePayload.subTotal;
                      td2.innerHTML = '<a href="/order/edit?ordernumber=' + responsePayload.orderNumber + '">View / Edit / Delete</a>';
+                     td3.innerHTML = '<button class="order" id='+responsePayload.orderNumber+' data-order='+responsePayload.orderNumber+'>Order</button>'
+                     
+                     document.querySelector("#noOrdersMessage").style.display = 'none';
+                     const order =  document.getElementById(responsePayload.orderNumber);
+
+                     order.addEventListener('click', () => {
+
+                        const orderNumber = order.getAttribute('data-order');
+
+                        const queryStringObject = { ordernumber : orderNumber};
+
+                        app.client.request(undefined, 'api/orders', 'GET', queryStringObject, undefined, (statusCode, payload) => {
+         
+                           if(statusCode == 200){
 
 
+                          window.location = `/order/complete?ordernumber=${orderNumber}`
+
+                           } else {
+
+                              console.log("Error please contact us on: 12345677", orderNumber);
+
+                           }
+                       
+                        });
+
+                       
+
+                     });
+                     
+
+                     
                      } else {
                         console.log("Error trying to load shopping cart", order);
-                     }
+                     }                   
                   
                   });
 
                });
 
-               if(allOrders.length < 3){
+              
+               
+
+
+
+            if(allOrders.length < 3){
                   // Show the create 
                   document.getElementById("createOrder").style.display = 'block';
                }
 
+
+               
+
+
             } else {
 
+               console.log('HELLO')
                // Show that 'you have made an order'
+               //
                document.querySelector("#noOrdersMessage").style.display = 'table-row';
    
-               document.querySelector("#createOrder").style.display = 'block';
+               // document.querySelector("#createOrder").style.display = 'block';
 
             }
 
@@ -614,14 +658,18 @@ app.loadShoppingCartPage = () => {
 
    } else {
       app.logUserOut();
+   
    }
+
+  
+
 }
 
 // Load the orders on the page
 app.loadShoppingCartEdit = () => {
    // Get the order number from the query string, if none is found then redirect back to dashboard
    const ordernumber = typeof(window.location.href.split('=')[1]) == 'string' && window.location.href.split('=')[1].length > 0 ? window.location.href.split('=')[1] : false;
-   console.log({ordernumber})
+
    if(ordernumber){
 
       // Construct the query string object
@@ -640,7 +688,7 @@ app.loadShoppingCartEdit = () => {
             }
 
             const orders = responsePayload.order;
-            console.log(orders)
+          
          
             let orderObject = {};
 
@@ -672,6 +720,35 @@ app.loadShoppingCartEdit = () => {
       window.location = '/shopping/Cart';
 
    }
+}
+
+app.comfirmOrder = () => {
+   
+   const ordernumber = typeof(window.location.href.split('=')[1]) == 'string' && window.location.href.split('=')[1].length > 0 ? window.location.href.split('=')[1] : false;
+
+   if(ordernumber){
+
+      const queryStringObject = {ordernumber}
+      // look order to check if order exists
+      app.client.request(undefined, 'api/complete', 'GET', queryStringObject, undefined, (statusCode, responsePayload) =>{
+
+         if(statusCode ==  200){
+
+            const complete = document.querySelector('.complete--order');
+
+            complete.textContent = ordernumber;
+
+
+         } else {
+              app.logUserOut();
+         }
+      });
+
+   } else {
+
+        app.logUserOut();
+   }
+
 }
 
 

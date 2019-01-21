@@ -85,16 +85,18 @@ helpers.sendEmail = (email, orderId, total, callback) => {
     if(email && orderId && total) {
 
         // Message send to the customer
-        const text = 'Your order for ${orderID} for £${total} is been successfully chraged to your credit card'
+        const text = `Your order for ${orderId} for £${total} is been successfully chraged to your credit card`
 
         // configure the payload 
         payload = {
-            from: '',
+            from: 'no-reply <pizza@sandbox26798bbf7eec4180a4dd48455042ea6f.mailgun.org>', //'postmaster@sandbox26798bbf7eec4180a4dd48455042ea6f.mailgun.org',
             to: email,
             subject:`Bill for order: ${orderId}`,
             text,
         }
 
+
+        debugger
         // Stringfy the payload 
         const stringfyPayload = querystring.stringify(payload);
 
@@ -103,44 +105,55 @@ helpers.sendEmail = (email, orderId, total, callback) => {
             protocol: 'https:',
             hostname: 'api.mailgun.net',
             method:'POST',
-            path: `/v3/${config.mailgun.domain}/messages`,
-            auth:`api:${config.mailgun.apikey}`,
+            path: `/v3/${config.mailgun.domain}`,
+            auth:config.mailgun.apiKey,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Content-Length': Buffer.byteLength(stringfyPayload)
+
             }
         }
 
         console.log(requestDetails);
 
+        debugger
         const req = https.request(requestDetails, (res) => {
 
             // Grab the the status code from the request
                 const statusCode = res.statusCode
 
-               
+               debugger
 
             // Callback statusCode 
             if(statusCode === 200 || statusCode === 201){
+                
+                debugger
                 callback(false)
+            
             } else {
-                callback('Status code returned was ' + status)
+                callback('Status code returned was ' + statusCode)
             }
 
+        })
+
             // Bind the error so it does not get thrown
-            req.on(error, (e) => {
+            req.on('error', (e) => {
+
+               
                 callback(e);
             })
 
             // Add the payload
             req.write(stringfyPayload);
 
+           
             // End request
             req.end();
 
-        })
+            
 
-        callback(false);
+
+
     } else {
         callback('Given parameters are missing or invalid')
     }
@@ -162,11 +175,13 @@ helpers.chargeCustomer = (email, totalPrice, orderId, callback) => {
 
         // configure the payload
         const payload = {
-            amount: totalPrice,
+            amount: totalPrice * 100,
             currency: 'gbp',
             source: 'tok_visa_debit',
             description: `Charge ${email} id ${orderId} total: ${totalPrice}`
         }
+
+       
 
         console.log(payload)
         const stringfyPayload = querystring.stringify(payload);
@@ -177,65 +192,63 @@ helpers.chargeCustomer = (email, totalPrice, orderId, callback) => {
             method: 'POST',
             hostname: 'api.stripe.com',
             path:'/v1/charges',
-            auth: config.stripe.apikey,
+            auth: config.stripe.apiKey,
             headers:{
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'Content-Length': Buffer.byteLength(stringfyPayload)
             }
+
         }
 
+       
         const req = https.request(requestDetails, (res) => {
 
-            // Grab the status code 
-            const statusCode = res.statusCode;
+            // debugger
+            // const status = res.statusCode;
 
-            // Handle the data stream
-            const decoder = new stringDecoder('utf-8');
+            // debugger
 
-            let buffer = '';
-
-            req.on('data', (data) => {
-
-                buffer += decoder.write(data);
-
-            });
-
-            req.on('end', () => {
-                buffer += decoder.end();
-
-                const data = helpers.parseJsonToObject(buffer);
-
-                if(statusCode === 200 || statusCode === 201 && data){
-
-                    callback(false, data.id);
-
-                } else {
-                    callback('Payment not successful')
-                }
-
-            });
-
-
-            // Bind the error so it does not get thrown
-            req.on('error',(err) => {
-                callback(err)
-            })
-
-            req.write(stringfyPayload);
-
-            // End Request
-            req.end();
+            // if(status == 200 || status == 201){
+            //     callback(false)
+            // } else {
+            //      callback('Status code returned was ' + status);
+            // }
+           
+            res.setEncoding('utf8');
+            res.on('data', (data) => {
+                const responseObject = helpers.parseJsonToObject(data);
             
-        })
+                if(responseObject.id){
+                    callback(false)
+                } else {
+                    callback(true, {Error: 'paymenthas not been made'})
+
+                }
+            })
+        });
 
 
-        callback(false)
+       
+        req.on('error', (e) => {
+            callback(e);
+        });
 
-    } else {
-        callback()
-    }
+       
 
-};
+        req.write(stringfyPayload);
+
+       
+        req.end();
+
+       
+    
+} else {
+        callback('Given parameters are missing or invalid');
+
+}
+
+
+}
 
 
 // Read files from static files 

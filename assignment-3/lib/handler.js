@@ -399,6 +399,48 @@ handlers.orderCreate = (data, callback) => {
 
  }
 
+// Order Complete form
+ handlers.orderComplete = (data, callback) => {
+
+     // Only procedd if method is a GET method
+     if (data.method === 'get') {
+
+         // Prepare data for intepolation
+         const templateData = {
+
+             'head.title': 'Order Completion',
+             'body.class': 'orderComplete'
+         }
+
+         helpers.getTemplate('orderComplete', templateData, (err, str) => {
+
+             if (!err && str) {
+                 // Add the header to the html file
+                 helpers.addUniversalTemplates(str, templateData, (err, str) => {
+
+                     if (!err && str) {
+
+                         // Send html file back to user 
+                         callback(200, str, 'html')
+
+                     } else {
+                         callback(500, undefined, 'html');
+                     }
+                 });
+
+             } else {
+                 callback(500, undefined, 'html')
+             }
+
+
+         });
+
+     } else {
+         callback(405, undefined, 'html')
+     }
+
+ }
+
 
 
 // Serve public asserts
@@ -1227,12 +1269,10 @@ handlers.shoppingCart = (data, callback) => {
             if(!err && shoppingcartData){
 
 
-                debugger 
-
                 // Verify the user using the tokens 
                 const token = typeof(data.headers.token) === 'string' && data.headers.token.trim().length == 20 ? data.headers.token : false;
 
-                debugger
+    
                 // Check to see whether user is logged in  
                 handlers._tokens.verifyToken(token, shoppingcartData.userName, (tokenData) => {
 
@@ -1244,14 +1284,11 @@ handlers.shoppingCart = (data, callback) => {
 
                             if(!err) {
 
-                                debugger
-
-                                //@TODO need to update array in users to reflect changes to order
                                 _data.read('users', shoppingcartData.userName, (err, userData) => {
 
                                     if(!err, userData){
 
-                                        debugger
+                                   
 
                                         // Update order array
                                         const newUserOrders = userData.userOrders.filter((userOrder) => {
@@ -1259,22 +1296,22 @@ handlers.shoppingCart = (data, callback) => {
                                             return userOrder !== orderNumber;
                                         });
 
-                                        debugger
+                    
                                         userData.userOrders = newUserOrders;
 
-                                        debugger
+                                    
 
 
 
                                         // Update user
                                         _data.update('users', shoppingcartData.userName, userData, (err) => {
-                                            debugger
+                                    
                                             
                                             if(!err) {
-                                                debugger
+                                            
                                                 callback(200)
                                             } else {
-                                                debugger
+                                            
                                                 callback(500, {Error: 'could not updata user profile'})
                                             }
                                         })
@@ -1545,13 +1582,81 @@ handlers._orders.get  = ( (data, callback) => {
 
 
                     helpers.chargeCustomer(email, subTotal, ordernumber, (err) => {
-                    
+                        
+                       
                         if(!err){
 
+                
                             helpers.sendEmail(email, orderNumber , subTotal, (err) => {
                             
                                 if(!err){
-                                    callback(200)
+                                
+                                    _data.create('order', orderNumber, shoppingcartData, (err) =>{
+
+                                        if(!err){
+
+                                           
+                                            // Delete order from shoppingcart file 
+                                            _data.delete('shoppingcart', orderNumber, (err) => {
+
+                                                if(!err){
+
+                    
+
+                                                 
+                                                    _data.read('users', shoppingcartData.userName, (err, userData) => {
+
+                                                        if(!err, userData){
+
+                                                    
+
+                                                            // Update order array
+                                                            const newUserOrders = userData.userOrders.filter((userOrder) => {
+
+                                                                return userOrder !== orderNumber;
+                                                            });
+
+                                        
+                                                            userData.userOrders = newUserOrders;
+
+                                                        
+                                                            // Update user
+                                                            _data.update('users', shoppingcartData.userName, userData, (err) => {
+                                                        
+                                                                
+                                                                if(!err) {
+                                                                
+                                                                    callback(200)
+                                                                } else {
+                                                                
+                                                                    callback(500, {Error: 'could not updata user profile'})
+                                                                }
+                                                            })
+
+                                                        } else {
+
+                                                            callback(500, {Error: 'could not delete order'});
+                                                        }
+
+                                                    });
+
+                                                } else {
+
+                                                    callback(500, {Error: 'could not delete order'});
+                            
+                                                }
+
+                                            })
+
+                                            
+                                        } else {
+
+                                            callback(500, {Error: 'Unable to update shoppingcart'})
+                                        }
+
+                                    })
+
+
                                 } else {
 
                                    callback(500, {Error: 'Payment could not be made or invalid email'})
@@ -1588,6 +1693,54 @@ handlers._orders.get  = ( (data, callback) => {
 
 
 });
+
+
+// Obtain complete order
+handlers._complete = {};
+
+handlers.complete = ((data, callback) => {
+
+  if(data.method === 'get') {
+
+    handlers._complete[data.method](data, callback);
+
+  } else {
+      callback(405)
+  }
+});
+
+// Make a GET request inorder to comfirm file.
+
+handlers._complete.get = ((data, callback) => {
+
+    const ordernumber = data.queryStringObject.ordernumber;
+
+    const orderNumber = typeof (ordernumber) == 'string' && ordernumber.trim().length == 20 ? ordernumber.trim() : false;
+
+    if(orderNumber){
+
+        _data.read('order', orderNumber, (err, payloadData) => {
+
+            if(!err){
+
+                callback(200)
+
+            } else {
+
+                callback(500, {Error: 'plesae contact us'})
+            }
+
+        })
+
+    } else {
+
+        callback(400, {'Error' : 'Order does not exist'}); 
+    }
+
+
+});
+
+
 
 
 
