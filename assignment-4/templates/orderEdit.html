@@ -1,0 +1,51 @@
+<h1>Order Details</h1>
+<a href="/shopping/Cart" class="backButton">Back</a>
+<hr/>
+
+<h2>Edit Your Orders</h2>
+
+
+<div class="formwrapper">
+    <form id="orderEdit1" action="/api/shoppingcart" method="PUT">
+        <input type="hidden" name="_method" value="PUT" />
+        <div class="formError"></div>
+        <div class="formSuccess"> Your Changes Have Been Saved</div>
+        <!-- <input class="hiddenIdInput" type="hidden" name="uid" /> -->
+        <label>
+            Order Number 
+            <input class="displayOrderNumber" type="text" name="ordernumber" disabled/>
+        </label>
+        <label>
+            Margherita £7
+            <input class="displayOrderMargherita" type="number" name="margherita" min="0" step="1" />
+        </label>
+        <label>
+            Pepperoni £10
+            <input class="displayOrderPepperoni" type="number" name="pepperoni" min="0" step="1" />
+        </label>
+        <label>
+            Meatball £10
+            <input class="displayOrderMeatball" type="number" name="meatball" min="0" step="1" />
+        </label>
+        <label>
+            Aubergine £7
+            <input class="displayOrderAubergine" type="number" name="aubergine" min="0" step="1" />
+        </label>
+        <div class="inputWrapper ctaWrapper">
+            <button type="submit" class="cta blue">Save Changes</button>
+        </div>
+    </form>
+</div>
+
+<h2>Delete Order</h2>
+
+<div class="formwrapper2">
+    <form id="orderEdit2" action="/api/shoppingcart" method="DELETE">
+        <input type="hidden" name="_method" value="DELETE"/>
+        <div class="formError"></div>
+        <input class="hiddenIdInput" type="hidden" name="uid" />
+        <div class="inputWrapper ctaWrapper">
+            <button type="submit" class="cta red">Delete Check</button>
+        </div>
+    </form>
+</div>
