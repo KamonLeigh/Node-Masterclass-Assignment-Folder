@@ -85,11 +85,11 @@ helpers.sendEmail = (email, orderId, total, callback) => {
     if(email && orderId && total) {
 
         // Message send to the customer
-        const text = `Your order for ${orderId} for £${total} is been successfully chraged to your credit card`
+        const text = `Your order for ${orderId} for £${total} is been successfully charged to your credit card`
 
         // configure the payload 
         payload = {
-            from: 'no-reply <pizza@sandbox26798bbf7eec4180a4dd48455042ea6f.mailgun.org>', //'postmaster@sandbox26798bbf7eec4180a4dd48455042ea6f.mailgun.org',
+            from: config.mailgun.email, 
             to: email,
             subject:`Bill for order: ${orderId}`,
             text,
