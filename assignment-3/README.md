@@ -1,7 +1,7 @@
 # Assignment 3
 
 Aim of this assignment was to build the front-end on top of api 
-build in the assignment 2.
+build in assignment 2.
 
 ## Start App 
 ```
@@ -14,8 +14,8 @@ node index.js
 Open browser on: ** http://localhost:3000/ **
 
 You can sign-up on ** / ** and click on menu link to view pizza menu
-CRUD is adhered in terms of ordering pizza and creating user. Please not 
-that only user with the right token can edit order
+CRUD is adhered to in terms of ordering pizza and creating user. Please not 
+that only user with the right token can edit etc ...
 
 
 
