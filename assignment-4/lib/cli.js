@@ -17,7 +17,7 @@
 
 // Input processor
 cli.processInput = (str) => {
-    str = typeof(str) == 'string' && str.trim().lengh > 0 ? str.trim() : false;
+    str = typeof(str) == 'string' && str.trim().length > 0 ? str.trim() : false;
 
     // Only process the string if user wrote something
     if(str){
@@ -28,11 +28,10 @@ cli.processInput = (str) => {
             'help',
             'menu',
             'list users',
-            'recent orders',
+            'more info order',
             'orders',
-            'specifc user',
+            'more info user',
             'exit',
-            'stats',
             'sign up',
             'sign in',
 
@@ -44,7 +43,9 @@ cli.processInput = (str) => {
 
         uniqueInputs.some( input => {
 
-            if(input.includes(str.toLowerCase())) {
+            //if(input.includes(str.toLowerCase()))
+            
+            if(str.toLowerCase().indexOf(input) > -1){
                 matchFound = true;
 
                 // Emit the input along with the string 
@@ -84,25 +85,22 @@ e.on('list users', (str) => {
     cli.responders.listUsers();
 });
 
-e.on('recent orders', (str) => {
-    cli.responders.recentOrders();
+e.on('more info order', (str) => {
+    cli.responders.moreInfoOrder();
 });
 
 e.on('orders', (str) => {
     cli.responders.orders();
 });
 
-e.on('specific user', (str) => {
-    cli.responders.specificUser(str);
+e.on('more info user', (str) => {
+    cli.responders.moreInfoUser(str);
 });
 
 e.on('exit', (str) => {
     cli.responders.exit();
 });
 
-e.on('stats', () => {
-    cli.responders.stats();
-});
 
 e.on('sign up', () => {
     cli.responders.signUp();
@@ -124,6 +122,89 @@ cli.responders.exit = () => {
     process.exit(0);
 };
 
+cli.responders.help = () => {
+    
+    //Make the template 
+    const commands = {
+         'man': 'Show this help page',
+         'help': 'Alias of the "man" ',
+         'menu':'List pizzas currently on the menu',
+         'list users': 'List all the registered users',
+         'more info order -{ordernumber}':'Show details of the specifed order',
+         'orders': 'list orders made in the last 24 hours',
+         'more info user --{username}': 'Show details of the specified user',
+         'exit':'Kill the cli (including the rest of the application)',
+         'sign up':'List all the users who has signed up in the last 24 hours',
+         'sign in':'List all the users who have signed in in the last 24 hours',
+
+
+    }
+
+    // Show a header for the help page that is as wide as the screen
+     cli.horizontalLine();
+     cli.centered('CLI MANUAL');
+     cli.horizontalLine();
+     cli.verticalSpace(2);
+
+    // Show each command, followed by its explanation, in white and yellow respectively
+    for (const key in commands) {
+        if(commands.hasProperty(key)){
+            const value = commands[key];
+            let line = '\x1b[33m'+key+'\x1b[0m';
+            let padding = 60 - line.length;
+
+            for(let i = 0; i < padding; i++){
+                line += ' ';
+
+            }
+            line+=value;
+            console.log(line);
+            cli.verticalSpace()
+
+        }
+
+    }
+    cli.verticalSpace(1);
+
+    // End wiht another horizontal line
+    cli.horizontalLine();
+}
+
+
+  cli.responders.menu = () => {
+    console.log('You asked for menu');
+ }
+
+  cli.responders.listUsers = () => {
+      console.log('You asked for listUsers');
+  }
+
+ cli.responders.recentOrders = () => {
+     console.log('You asked for recent orders');
+ }
+
+ cli.responders.moreInfoUser = (str) => {
+     console.log('You asked for specific user', str)
+ }
+
+cli.responders.orders = () => {
+     console.log('You asked for orders');
+}
+
+
+ cli.responders.signIn = () => {
+     console.log('You asked for sign in');
+ }
+
+ cli.responders.signUp = () => {
+     console.log('You asked for sign up');
+ }
+
+ cli.responders.stats = (str) => {
+     console.log('You asked for stats', str)
+ }
+
+
 // Init Script
 cli.init = () => {
     // Send a message to the console in dark blue
@@ -142,6 +223,8 @@ cli.init = () => {
     // Handle each line of input separately
     _interface.on('line',(str) => {
         // send to the input processor
+
+       
         cli.processInput(str);
 
         // Restart the prompt
@@ -154,8 +237,11 @@ cli.init = () => {
     _interface.on('close', () => {
         process.exit(0)
     });
-
+                                                                                                              
 }
+
+
+
 
 
 // Export the module 
