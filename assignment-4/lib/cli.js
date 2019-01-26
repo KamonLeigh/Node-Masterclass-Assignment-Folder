@@ -10,6 +10,7 @@
  const events = require('events');
  class _events extends events{};
  const e = new _events;
+ const _data = require('./data');
 
  // Instantiate the cli module object
  const cli = {}
@@ -148,7 +149,7 @@ cli.responders.help = () => {
 
     // Show each command, followed by its explanation, in white and yellow respectively
     for (const key in commands) {
-        if(commands.hasProperty(key)){
+        if(commands.hasOwnProperty(key)){
             const value = commands[key];
             let line = '\x1b[33m'+key+'\x1b[0m';
             let padding = 60 - line.length;
@@ -170,13 +171,79 @@ cli.responders.help = () => {
     cli.horizontalLine();
 }
 
+// Create the vertical line
+  cli.verticalSpace = (lines)  => {
+      lines = typeof(lines) === 'number' && lines > 0 ? lines : 1;
+      
+      for(let i = 0; i < lines; i++){
+          console.log('');
+      }
+
+  }
+
+// Create a horizontal line 
+cli.horizontalLine = () => {
+
+    // Get the width of the current terminal
+    const width = process.stdout.columns;
+
+    // Create variable to store dashes 
+    let line = ''
+
+    for(let i = 0; i < width; i++){
+        line += '-';
+    }
+
+    console.log(line);
+}
+
+// Create a centered text on the screen
+ cli.centered = (str) => {
+     str = typeof(str) === 'string' && str.trim().length > 0 ?  str.trim() : ''
+
+     const width = process.stdout.columns;
+
+     const leftPadding = Math.floor((width - str.length) / 2);
+
+     // Loop through to create left padding
+    let line = '';
+    for(let i = 0; i < leftPadding; i++){
+        line += ' ';
+
+    }
+
+    line += str;
+
+    console.log(line);
+ }
 
   cli.responders.menu = () => {
     console.log('You asked for menu');
  }
 
   cli.responders.listUsers = () => {
-      console.log('You asked for listUsers');
+      _data.list('users', (err, userIds) => {
+         
+          if(!err && userIds && userIds.length > 0) {
+             
+            userIds.forEach(userId => {
+                _data.read('users', userId, (err, user) =>{
+                  
+                    if(!err && user){
+                        const { userName, firstName, lastName, email, address, userOrders, phone } = user
+                        let line = ` User:${userName} Name: ${firstName} ${lastName} Phone: ${phone} Email: ${email} Address: ${address} ShoppigCartsTotal:`
+                        const noOfShoppingCarts = typeof(userOrders) === 'object' && userOrders instanceof Array && userOrders.length > 0 ? userOrders.length : 0;
+
+                        line += noOfShoppingCarts;
+
+                        console.log(line);
+                        cli.verticalSpace();
+                    }
+                })
+            })
+          }
+      })
+      
   }
 
  cli.responders.recentOrders = () => {
