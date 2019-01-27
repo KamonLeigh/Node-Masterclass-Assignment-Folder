@@ -87,7 +87,7 @@ e.on('list users', (str) => {
 });
 
 e.on('more info order', (str) => {
-    cli.responders.moreInfoOrder();
+    cli.responders.moreInfoOrder(str);
 });
 
 e.on('orders', (str) => {
@@ -218,14 +218,34 @@ cli.horizontalLine = () => {
  }
 
   cli.responders.menu = () => {
-    console.log('You asked for menu');
+   _data.read('menu', 'menu',(err, menuItems) => {
+
+    if(!err && menuItems){
+        cli.horizontalLine();
+        cli.centered('Menu');
+        cli.horizontalLine();
+        cli.verticalSpace(2);
+
+        menuItems.menu.forEach( item => {
+            const { name, price } = item;
+            const line = `Name: ${name}     price: £${price}.00`
+            console.log(line);
+            cli.verticalSpace();
+            
+        });
+
+        cli.horizontalLine();
+
+    }
+
+   })
  }
 
   cli.responders.listUsers = () => {
       _data.list('users', (err, userIds) => {
          
           if(!err && userIds && userIds.length > 0) {
-             
+             cli.verticalSpace();
             userIds.forEach(userId => {
                 _data.read('users', userId, (err, user) =>{
                   
@@ -254,8 +274,24 @@ cli.horizontalLine = () => {
      console.log('You asked for specific user', str)
  }
 
-cli.responders.orders = () => {
-     console.log('You asked for orders');
+cli.responders.moreInfoOrder = (str) => {
+     const arr = str.split('--');
+     console.log(arr)
+     const order = typeof(arr[1]) === 'string' && arr[1].trim().length > 0 ? arr[1].trim() : false;
+
+     if(order){
+        _data.read('order', order, (err, orderData) => {
+
+            if(!err && orderData){
+
+                cli.verticalSpace();
+                console.dir(orderData, {'colors' : true});
+                cli.verticalSpace();
+            }
+
+        });
+
+     }
 }
 
 
