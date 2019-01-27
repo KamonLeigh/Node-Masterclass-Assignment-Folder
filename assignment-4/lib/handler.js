@@ -1590,6 +1590,8 @@ handlers._orders.get  = ( (data, callback) => {
                             helpers.sendEmail(email, orderNumber , subTotal, (err) => {
                             
                                 if(!err){
+
+                                    shoppingcartData.date =  Date.now();
                                 
                                     _data.create('order', orderNumber, shoppingcartData, (err) =>{
 

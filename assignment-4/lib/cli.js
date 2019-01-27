@@ -11,6 +11,8 @@
  class _events extends events{};
  const e = new _events;
  const _data = require('./data');
+ const os = require('os');
+ const v8 = require('v8');
 
  // Instantiate the cli module object
  const cli = {}
@@ -35,6 +37,7 @@ cli.processInput = (str) => {
             'exit',
             'sign up',
             'sign in',
+            'stats'
 
         ];
 
@@ -111,6 +114,10 @@ e.on('sign in', () => {
     cli.responders.signIn()
 });
 
+e.on('stats', () => {
+    cli.responders.stats();
+})
+
 
 
 
@@ -137,6 +144,7 @@ cli.responders.help = () => {
          'exit':'Kill the cli (including the rest of the application)',
          'sign up':'List all the users who has signed up in the last 24 hours',
          'sign in':'List all the users who have signed in in the last 24 hours',
+         'stats': 'Information about the hardware'
 
 
     }
@@ -271,12 +279,31 @@ cli.horizontalLine = () => {
  }
 
  cli.responders.moreInfoUser = (str) => {
-     console.log('You asked for specific user', str)
+     const arr = str.split('--');
+     
+
+     const user = typeof(arr[1]) === 'string' && arr[1].trim().length > 0 ? arr[1].trim() : false;
+
+     console.log(user)
+     if(user){
+         _data.read('users', user, (err, userData) => {
+
+            if(!err && userData){
+
+                delete userData.hashedPassword;
+
+                cli.verticalSpace();
+                console.dir(userData, {'colors': true});
+                cli.verticalSpace();
+            }
+
+         });
+     }
  }
 
 cli.responders.moreInfoOrder = (str) => {
      const arr = str.split('--');
-     console.log(arr)
+    
      const order = typeof(arr[1]) === 'string' && arr[1].trim().length > 0 ? arr[1].trim() : false;
 
      if(order){
@@ -303,8 +330,51 @@ cli.responders.moreInfoOrder = (str) => {
      console.log('You asked for sign up');
  }
 
- cli.responders.stats = (str) => {
-     console.log('You asked for stats', str)
+ cli.responders.stats = () => {
+    // Compile an object of stats
+    const stats = {
+        'Load Average': os.loadavg().join(' '),
+        'CPU Count': os.cpus().length,
+        'Free Memory': os.freemem(),
+        'Currect Malloced Memory':v8.getHeapStatistics().malloced_memory,
+        'Peak Malloced Memory':v8.getHeapStatistics().peak_malloced_memory,
+        'Allocated Heap Used (%)': Math.round((v8.getHeapStatistics().used_heap_size/ v8.getHeapStatistics().total_heap_size) * 100),
+        'Available Heap Allocated (%)': Math.round((v8.getHeapStatistics().total_heap_size / v8.getHeapStatistics().heap_size_limit) * 100),
+        'Uptime':os.uptime() + ' Seconds'
+    } 
+
+    // Creat the header for the stats
+     cli.horizontalLine();
+     cli.centered('SYSTEM STATS');
+     cli.horizontalLine();
+     cli.verticalSpace(2);
+
+
+
+     for (const key in stats) {
+         if (stats.hasOwnProperty(key)) {
+             const value = stats[key];
+             let line = '\x1b[33m' + key + '\x1b[0m';
+             let padding = 60 - line.length;
+
+             for (let i = 0; i < padding; i++) {
+                 line += ' ';
+
+             }
+             line += value;
+             console.log(line);
+             cli.verticalSpace()
+
+         }
+
+     }
+     cli.verticalSpace(1);
+
+     // End wiht another horizontal line
+     cli.horizontalLine();
+     
+
+
  }
 
 
