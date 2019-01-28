@@ -93,7 +93,7 @@ e.on('more info order', (str) => {
     cli.responders.moreInfoOrder(str);
 });
 
-e.on('orders', (str) => {
+e.on('orders', () => {
     cli.responders.orders();
 });
 
@@ -249,6 +249,9 @@ cli.horizontalLine = () => {
    })
  }
 
+
+ /* Functions that run to log information to the terminal   */
+
   cli.responders.listUsers = () => {
       _data.list('users', (err, userIds) => {
          
@@ -274,8 +277,47 @@ cli.horizontalLine = () => {
       
   }
 
- cli.responders.recentOrders = () => {
-     console.log('You asked for recent orders');
+ cli.responders.orders = () => {
+
+
+    // Calculate 24 hours in ms
+    const day = Date.now() - (24 * 60 * 60 * 1000);
+
+    _data.list('order', (err, orderList) => {
+
+        if(!err && orderList){
+
+
+            // orderlist is an array filter througn and check order has been made within time frame
+
+            orderList.filter( order => {
+
+                _data.read('order', order, (err, orderPayload) => {
+
+                    if(!err && orderPayload){
+
+    
+
+                        if(orderPayload.date >= day){
+
+                            const { orderNumber, email, userName } = orderPayload;
+
+                            console.log(`Email: ${email} User name: ${userName} Ordernumber: ${orderNumber}`);
+                            cli.verticalSpace();
+                            return 
+                        }
+                    }
+                });
+
+            });
+
+
+
+        }
+    
+    });
+
+    
  }
 
  cli.responders.moreInfoUser = (str) => {
@@ -284,7 +326,7 @@ cli.horizontalLine = () => {
 
      const user = typeof(arr[1]) === 'string' && arr[1].trim().length > 0 ? arr[1].trim() : false;
 
-     console.log(user)
+     
      if(user){
          _data.read('users', user, (err, userData) => {
 
@@ -322,12 +364,48 @@ cli.responders.moreInfoOrder = (str) => {
 }
 
 
- cli.responders.signIn = () => {
-     console.log('You asked for sign in');
+ cli.responders.signUp = () => {
+   
+   // Calculate time in ms 24 hours before function is called 
+   const day =  Date.now() - (24 * 60 * 60 * 1000);
+
+
+    _data.list('users', (err, userIds) => {
+        if(!err && userIds ){
+
+        
+             userIds.filter((userId) => {
+
+                _data.read('users', userId, (err, userData) =>{
+
+                    if(!err && userData){
+
+
+                        if(userData.createdAt >= day ){
+                            
+                            const { firstName, lastName,  email,  createdAt, userName} = userData;
+                            console.log(`Name: ${firstName} ${lastName} Email: ${email} User name: ${userName}`)
+                            cli.verticalSpace()
+                            return 
+                            
+                        }
+                    }
+
+                });
+
+            });
+
+
+           
+        }
+
+
+    });
+
  }
 
- cli.responders.signUp = () => {
-     console.log('You asked for sign up');
+ cli.responders.signIn = () => {
+     console.log('You asked for sign In');
  }
 
  cli.responders.stats = () => {

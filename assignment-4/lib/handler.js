@@ -615,7 +615,8 @@ handlers.shoppingCart = (data, callback) => {
                          email,
                          phone,
                          hashedPassword,
-                         address
+                         address,
+                         createdAt: Date.now()
                      }
                                    
                     // Create new user
