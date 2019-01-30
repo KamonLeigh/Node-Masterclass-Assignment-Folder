@@ -110,9 +110,6 @@ e.on('sign up', () => {
     cli.responders.signUp();
 });
 
-e.on('sign in', () => {
-    cli.responders.signIn()
-});
 
 e.on('stats', () => {
     cli.responders.stats();
@@ -143,7 +140,6 @@ cli.responders.help = () => {
          'more info user --{username}': 'Show details of the specified user',
          'exit':'Kill the cli (including the rest of the application)',
          'sign up':'List all the users who has signed up in the last 24 hours',
-         'sign in':'List all the users who have signed in in the last 24 hours',
          'stats': 'Information about the hardware'
 
 
@@ -404,9 +400,7 @@ cli.responders.moreInfoOrder = (str) => {
 
  }
 
- cli.responders.signIn = () => {
-     console.log('You asked for sign In');
- }
+
 
  cli.responders.stats = () => {
     // Compile an object of stats
