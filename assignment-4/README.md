@@ -103,7 +103,7 @@ Along with username in querystring sent { token: tokenId } in header
 
 #### Extend life span of token for another hour 
 
- **http://localhost:3000/tokens  **POST**
+ **http://localhost:3000/tokens**  **POST**
 
 
 ```
@@ -115,12 +115,12 @@ Along with username in querystring sent { token: tokenId } in header
 
 #### Obtain the token 
 
- **http://localhost:3000/tokens?id={tokenid}** via **GETY**
+ **http://localhost:3000/tokens?id={tokenId}** via **GET**
 
 
 #### Delete token
 
-**http://localhost:3000/tokens?id={tokenIgi}** via **DETELE**
+**http://localhost:3000/tokens?id={tokenId}** via **DETELE**
 
 
 
@@ -152,13 +152,13 @@ NB please ensure token is valid
 #### Review the order
 
 
- **http:localhost:3000/shoppingcart?ordernumber={order number}** via **GET**
+ **http:localhost:3000/shoppingcart?ordernumber={orderNumber}** via **GET**
 
 
 
 #### delete the order
 
- **http:localhost:3000/shoppingcart?ordernumber={order number}** via **DELETE**
+ **http:localhost:3000/shoppingcart?ordernumber={orderNumber}** via **DELETE**
 
 ### /orders
 
@@ -166,7 +166,7 @@ NB please ensure token is valid
 
 NB please ensure token is valid 
 
- **http://localhost:3000/orders?ordername={ordernumber}** via **GET**
+ **http://localhost:3000/orders?ordername={orderNumber}** via **GET**
 
 
 
