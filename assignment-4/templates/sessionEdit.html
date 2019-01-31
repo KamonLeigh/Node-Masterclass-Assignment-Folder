@@ -6,9 +6,9 @@
         <input type="hidden" name="_method" value="PUT" />
         <div class="formError"></div>
         <div class="formSuccess">Your Changes Have Been Saved</div>
-        <label for="userName">
-            User Name
-            <input class="hiddenUserName" type="text" name="userName" placeholder="johnsmith" disabled>
+        <label for="hiddenEmail">
+          Email
+            <input class="hiddenEmail" type="email" name="email" placeholder="john@example.com" disabled>
         </label>
         <label for="firstName">
             First Name
@@ -18,10 +18,7 @@
             Last Name
             <input class="lastNameInput" type="text" name="lastName" placeholder="smith">
         </label>
-        <label for="email">
-            Email
-            <input class="emailInput" type="email" name="email" placeholder="John@example.com">
-        </label>
+
         <label for="phone">
             Phone
             <input class="phoneInput" type="text" name="phone" placeholder="(415) 123-4567" />
@@ -45,9 +42,9 @@
         <input type="hidden" name="_method" value="PUT" />
         <div class="formError"></div>
         <div class="formSuccess">Your Changes Have Been Saved</div>
-        <label for="userName">
-            User Name
-            <input class="hiddenUserName" type="text" name="userName" placeholder="johnsmith" disabled>
+        <label for="email">
+           Email
+            <input class="hiddenUserName" type="email" name="email" placeholder="john@example.com" disabled>
         </label>
         <label for="password">
             choose a new password
@@ -63,9 +60,9 @@
     <form id="accountEdit3" action="api/user" method="DELETE">
         <input type="hidden" name="_method" value="DELETE">
         <div class="formError">
-        <label for="userName">
-            User Name
-            <input class="hiddenUserName" name="userName" placeholder="johnsmith" type="text" disabled>
+        <label for="email">
+            Email
+            <input class="hiddenUserName" name="email" placeholder="john@example.com" type="text" disabled>
         </label>
          <div class="inputWrapper ctaWrapper">
              <button type="submit" class="cta blue">Get Started</button>

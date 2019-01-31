@@ -581,8 +581,7 @@ handlers.shoppingCart = (data, callback) => {
  handlers._users.post = (( data, callback) => {
 
     // Deconstruct variables from payload and check all fields are filled
-    let { userName, firstName, lastName ,email, phone, password, address } = data.payload;
-    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+    let { firstName, lastName ,email, phone, password, address } = data.payload;
     firstName = typeof (firstName) === 'string' && firstName.trim().length > 0 ? firstName : false;
     lastName = typeof (lastName) === 'string' && lastName.trim().length > 0 ? lastName : false;
     email = typeof(email) === 'string' && email.trim().length > 3 ? email: false;
@@ -591,11 +590,11 @@ handlers.shoppingCart = (data, callback) => {
     address = typeof(address) === 'string' && address.trim().length > 3 ? address : false;
     
 
-    if(userName && firstName && lastName && email && phone && password && address){
+    if(firstName && lastName && email && phone && password && address){
     
     
         // Make sure that user is unique
-        _data.read('users', userName, (err, data) => {
+        _data.read('users', email, (err, data) => {
 
             if(err){
                 // returns error meaning user is unique
@@ -609,7 +608,6 @@ handlers.shoppingCart = (data, callback) => {
 
                       // Create user object
                      const userObject = {
-                         userName,
                          firstName,
                          lastName,
                          email,
@@ -620,7 +618,7 @@ handlers.shoppingCart = (data, callback) => {
                      }
                                    
                     // Create new user
-                    _data.create('users', userName, userObject, (err) => {
+                    _data.create('users', email, userObject, (err) => {
                         if (!err) {
                             callback(200);
                         } else {
@@ -654,21 +652,21 @@ handlers.shoppingCart = (data, callback) => {
  handlers._users.get = ((data, callback) =>{
 
     // Check if user is valid
-    const { username } = data.queryStringObject;
+   let { email } = data.queryStringObject;
 
-    const userName = typeof(username) === 'string' && username.trim().length > 0 ? username : false;
+     email = typeof(email) === 'string' && email.trim().length > 0 ? email : false;
 
     // if query string is valid continue otherwise return an Error
-    if(userName){
+    if(email){
 
         // Verify that user is valid using the token 
         const token = typeof(data.headers.token) === 'string' ? data.headers.token : false;
       
         // Validate user
-        handlers._tokens.verifyToken(token, userName, (tokenIsValid) => {
+        handlers._tokens.verifyToken(token, email, (tokenIsValid) => {
 
             if(tokenIsValid){
-                _data.read('users', userName, (err, data) => {
+                _data.read('users', email, (err, data) => {
                     if (!err && data) {
 
                     
@@ -702,17 +700,17 @@ handlers.shoppingCart = (data, callback) => {
  handlers._users.delete = ((data, callback) => {
     
     // Validate query string
-    const { username } = data.queryStringObject;
+    let { email } = data.queryStringObject;
 
-    const userName = typeof(username) === 'string' && username.trim().length > 0 ? username : false;
+     email= typeof(email) === 'string' && email.trim().length > 0 ? email : false;
 
 
-    if(userName){
+    if(email){
 
         // Get the token form the user
         const token = typeof(data.headers.token) === 'string' ? data.headers.token : false;
 
-        token._tokens.verifyToken(token, userName  ,(tokenIsValid) => {
+        token._tokens.verifyToken(token, email  ,(tokenIsValid) => {
 
             if(tokenIsValid){
 
@@ -722,7 +720,7 @@ handlers.shoppingCart = (data, callback) => {
                     if (!err && userData) {
 
                         // Delete user
-                        _data.delete('users', userName, (err, userData) => {
+                        _data.delete('users', email, (err, userData) => {
                             
                             if (!err) {
                                 callback(200)
@@ -759,35 +757,34 @@ handlers.shoppingCart = (data, callback) => {
  handlers._users.put =((data, callback) => {
 
     // Obtain the fields 
-    let { userName, firstName, lastName, email, phone, password, address } = data.payload;
+    let { firstName, lastName, email, phone, password, address } = data.payload;
 
     // Check for the required
-    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+    email = typeof(email) === 'string' && email.trim().length > 0 ? email : false;
 
     // Check the optional data
     firstName = typeof(firstName) === 'string' && firstName.trim().length > 0 ? firstName : false;
     lastName = typeof (lastName) === 'string' && lastName.trim().length > 0 ? lastName : false;
-    email = typeof (email) === 'string' && email.trim().length > 3 ? email : false;
     phone = typeof (phone) === 'string' && phone.trim().length > 10 ? phone : false;
     password = typeof (password) === 'string' && password.trim().length > 0 ? password : false;
     address = typeof (address) === 'string' && address.trim().length > 3 ? address : false;
 
     // Error if the phone number is invalid 
-    if(userName){
+    if(email){
 
 
         // Error if optional data is invalid 
-        if(firstName || lastName || email || phone || password || address){
+        if(firstName || lastName || phone || password || address){
           
             // verify that the token is valid
             const token = typeof(data.headers.token) === 'string' ? data.headers.token : false;
 
-            handlers._tokens.verifyToken(token, userName, (tokenIsValid) =>{
+            handlers._tokens.verifyToken(token, email, (tokenIsValid) =>{
 
                 if(tokenIsValid){
 
                      // Look up the user 
-                     _data.read('users', userName, (err, userData) => {
+                     _data.read('users', email, (err, userData) => {
 
                          if (!err && userData) {
 
@@ -800,9 +797,6 @@ handlers.shoppingCart = (data, callback) => {
                                  userData.lastName = lastName
                              }
 
-                             if (email) {
-                                 userData.email = email
-                             }
 
                              if (phone) {
                                  userData.phone = phone
@@ -818,7 +812,7 @@ handlers.shoppingCart = (data, callback) => {
 
 
                              // Store the new updates
-                             _data.update('users', userName, userData, (err) => {
+                             _data.update('users', email, userData, (err) => {
                                  if (!err) return callback(200);
                                  callback(500, {
                                      'Error': 'Could not update the user'
@@ -869,19 +863,19 @@ handlers.shoppingCart = (data, callback) => {
  handlers._tokens.post = ((data, callback) => {
     
     // Check the optional data
-    let { userName, password } = data.payload;
+    let { email, password } = data.payload;
    
 
   
-    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+    email = typeof(email) === 'string' && email.trim().length > 0 ? email : false;
     password = typeof(password) === 'string' && password.trim().length > 0 ? password : false;
     
 
     // Check if user provided data and proceed
-    if(userName && password){
+    if(email && password){
 
         // Look up user with respect to the userName 
-        _data.read('users', userName, (err, userData) => {
+        _data.read('users', email, (err, userData) => {
 
             if(err) return callback(400, {Error: 'Could not find user'})
 
@@ -898,7 +892,7 @@ handlers.shoppingCart = (data, callback) => {
 
                 // Create token object
                 const tokenObject = {
-                    userName: userData.userName,
+                    email: userData.email,
                     tokenId,
                     expires 
                 }
@@ -1026,12 +1020,12 @@ handlers.shoppingCart = (data, callback) => {
  });
 
  // Verify that giveb User's token is valid 
- handlers._tokens.verifyToken =  (id, userName, callback) =>{
+ handlers._tokens.verifyToken =  (id, email, callback) =>{
      // Lookup the token
      _data.read('tokens', id,  (err, tokenData) => {
          if (!err && tokenData) {
              // Check that the token is for the given user and has not expired
-             if (tokenData.userName == userName && tokenData.expires > Date.now()) {
+             if (tokenData.email == email && tokenData.expires > Date.now()) {
                  callback(true);
 
              } else {
@@ -1093,16 +1087,16 @@ handlers.shoppingCart = (data, callback) => {
  handlers._shoppingcart.post = ((data, callback) => {
 
     // destruct and check for the required keys 
-    let { margherita, pepperoni, meatball, aubergine, userName }  = data.payload;
+    let { margherita, pepperoni, meatball, aubergine, email }  = data.payload;
 
-    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+    email = typeof(email) === 'string' && email.trim().length > 0 ? email : false;
 
     margherita = typeof (parseInt(margherita) == NaN ? 0 : parseInt(margherita)) === 'number' && margherita > 0 ? margherita : false;
     pepperoni = typeof (parseInt(pepperoni) == NaN ? 0 : parseInt(margherita)) === 'number' && pepperoni > 0 ? pepperoni : false;
     meatball = typeof (parseInt(meatball) == NaN ? 0 : parseInt(margherita)) === 'number' && meatball > 0 ? meatball : false;
     aubergine = typeof (parseInt(aubergine) == NaN ? 0 : parseInt(margherita)) === 'number' && aubergine > 0 ? aubergine : false;
 
-    if(userName){
+    if(email){
 
           
 
@@ -1115,13 +1109,13 @@ handlers.shoppingCart = (data, callback) => {
             const token = typeof (data.headers.token) === 'string' ? data.headers.token : false;
 
             //autheticate user 
-            handlers._tokens.verifyToken(token, userName, (tokenIsValid) => {
+            handlers._tokens.verifyToken(token, email, (tokenIsValid) => {
 
                 if(tokenIsValid){
                    
                       
                     // Look up the user 
-                    _data.read('users', userName,(err, userData) =>{
+                    _data.read('users', email, (err, userData) =>{
                         
                         if(!err && userData){
 
@@ -1187,7 +1181,6 @@ handlers.shoppingCart = (data, callback) => {
                                         
                                         const orderObject = {
                                             orderNumber,
-                                            userName: userData.userName,
                                             email: userData.email,
                                             subTotal,
                                             order
@@ -1206,7 +1199,7 @@ handlers.shoppingCart = (data, callback) => {
                                             
 
                                              // Save the new user data
-                                             _data.update('users', userName, userData, (err) =>{
+                                             _data.update('users', email, userData, (err) =>{
                                                  if(!err){
                                                      
                                                      // Return the data about the new order
@@ -1249,7 +1242,7 @@ handlers.shoppingCart = (data, callback) => {
 
         }
     } else {
-        callback(400, {Error: 'Ensure username is sent with order'})
+        callback(400, {Error: 'Ensure email is sent with order'})
     }  
  });      
 
@@ -1275,7 +1268,7 @@ handlers.shoppingCart = (data, callback) => {
 
     
                 // Check to see whether user is logged in  
-                handlers._tokens.verifyToken(token, shoppingcartData.userName, (tokenData) => {
+                handlers._tokens.verifyToken(token, shoppingcartData.email, (tokenData) => {
 
                     if(tokenData){
 
@@ -1285,7 +1278,7 @@ handlers.shoppingCart = (data, callback) => {
 
                             if(!err) {
 
-                                _data.read('users', shoppingcartData.userName, (err, userData) => {
+                                _data.read('users', shoppingcartData.email, (err, userData) => {
 
                                     if(!err, userData){
 
@@ -1305,7 +1298,7 @@ handlers.shoppingCart = (data, callback) => {
 
 
                                         // Update user
-                                        _data.update('users', shoppingcartData.userName, userData, (err) => {
+                                        _data.update('users', shoppingcartData.email, userData, (err) => {
                                     
                                             
                                             if(!err) {
@@ -1369,7 +1362,7 @@ handlers.shoppingCart = (data, callback) => {
 
             
                 // Check if the user is logged in 
-                handlers._tokens.verifyToken(token, shoppingcartData.userName, (tokenIsValid) => {
+                handlers._tokens.verifyToken(token, shoppingcartData.email, (tokenIsValid) => {
 
                     if(tokenIsValid){
 
@@ -1407,9 +1400,9 @@ handlers.shoppingCart = (data, callback) => {
      const orderNumber = typeof (ordernumber) === 'string' && ordernumber.trim().length === 20 ? ordernumber : false;
 
      // destruct and check for the required keys 
-    let { margherita, pepperoni, meatball, aubergine, userName }  = data.payload;
+    let { margherita, pepperoni, meatball, aubergine, email }  = data.payload;
 
-    userName = typeof(userName) === 'string' && userName.trim().length > 0 ? userName : false;
+    email = typeof(email) === 'string' && email.trim().length > 0 ? email : false;
 
     margherita = typeof (parseInt(margherita) == NaN ? 0 : parseInt(margherita)) === 'number' && margherita > 0 ? margherita : false;
     pepperoni = typeof (parseInt(pepperoni) == NaN ? 0 : parseInt(margherita)) === 'number' && pepperoni > 0 ? pepperoni : false;
@@ -1430,7 +1423,7 @@ handlers.shoppingCart = (data, callback) => {
 
             if(!err && cartData) {
 
-                handlers._tokens.verifyToken(token, cartData.userName, (tokenData) => {
+                handlers._tokens.verifyToken(token, cartData.email, (tokenData) => {
 
                     if(tokenData){
 
@@ -1574,9 +1567,9 @@ handlers._orders.get  = ( (data, callback) => {
             
                
 
-              const { email, subTotal, userName } = shoppingcartData;
+              const { email, subTotal } = shoppingcartData;
     
-            handlers._tokens.verifyToken(token, userName, (tokenData) => {
+            handlers._tokens.verifyToken(token, email, (tokenData) => {
 
                 
                 if(tokenData){
@@ -1607,7 +1600,7 @@ handlers._orders.get  = ( (data, callback) => {
                     
 
                                                  
-                                                    _data.read('users', shoppingcartData.userName, (err, userData) => {
+                                                    _data.read('users', shoppingcartData.email, (err, userData) => {
 
                                                         if(!err, userData){
 
@@ -1624,7 +1617,7 @@ handlers._orders.get  = ( (data, callback) => {
 
                                                         
                                                             // Update user
-                                                            _data.update('users', shoppingcartData.userName, userData, (err) => {
+                                                            _data.update('users', shoppingcartData.email, userData, (err) => {
                                                         
                                                                 
                                                                 if(!err) {

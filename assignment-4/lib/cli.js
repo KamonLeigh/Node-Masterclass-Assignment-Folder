@@ -257,8 +257,8 @@ cli.horizontalLine = () => {
                 _data.read('users', userId, (err, user) =>{
                   
                     if(!err && user){
-                        const { userName, firstName, lastName, email, address, userOrders, phone } = user
-                        let line = ` User:${userName} Name: ${firstName} ${lastName} Phone: ${phone} Email: ${email} Address: ${address} ShoppigCartsTotal:`
+                        const { firstName, lastName, email, address, userOrders, phone } = user
+                        let line = ` Name: ${firstName} ${lastName} Phone: ${phone} Email: ${email} Address: ${address} ShoppigCartsTotal:`
                         const noOfShoppingCarts = typeof(userOrders) === 'object' && userOrders instanceof Array && userOrders.length > 0 ? userOrders.length : 0;
 
                         line += noOfShoppingCarts;
@@ -296,9 +296,9 @@ cli.horizontalLine = () => {
 
                         if(orderPayload.date >= day){
 
-                            const { orderNumber, email, userName } = orderPayload;
+                            const { orderNumber, email, } = orderPayload;
 
-                            console.log(`Email: ${email} User name: ${userName} Ordernumber: ${orderNumber}`);
+                            console.log(`Email: ${email} Ordernumber: ${orderNumber}`);
                             cli.verticalSpace();
                             return 
                         }
@@ -379,8 +379,8 @@ cli.responders.moreInfoOrder = (str) => {
 
                         if(userData.createdAt >= day ){
                             
-                            const { firstName, lastName,  email,  createdAt, userName} = userData;
-                            console.log(`Name: ${firstName} ${lastName} Email: ${email} User name: ${userName}`)
+                            const { firstName, lastName,  email,  createdAt,} = userData;
+                            console.log(`Name: ${firstName} ${lastName} Email: ${email} `)
                             cli.verticalSpace()
                             return 
                             

@@ -234,10 +234,10 @@
              let  queryStringObject = method == 'DELETE' ? payload : {};
 
 
-             // Handle adding username to payload if required
+             // Handle adding email to payload if required
 
              if(path.includes('shopping')){
-                payload.userName = app.config.sessionToken.userName;
+                payload.email = app.config.sessionToken.email;
              }
 
              if(path.includes('shopping') && method == 'PUT' ) {
@@ -252,7 +252,7 @@
             
             // Call api
             app.client.request(undefined, path, method, queryStringObject, payload, (statusCode, responsePayload) => {
-               
+               console.log({path, method, queryStringObject, payload, statusCode, responsePayload} )
                // Display sn error on the form if needed 
                if(statusCode !== 200 ){
                   
@@ -290,7 +290,7 @@ app.formResponseProcessor = (formId, requestPayload, responsePayload) => {
    if(formId == 'accountCreate'){
      // Take the phone and password, and use it to log the user in 
     const newPayload = {
-       userName : requestPayload.userName,
+       email : requestPayload.email,
        password: requestPayload.password
     }
 
@@ -505,12 +505,12 @@ app.loadDataOnPage = () => {
 
 app.loadAccountEditData = () => {
    // Get the user data from the token otherwise logout
-   const userName = typeof(app.config.sessionToken.userName) == 'string' ? app.config.sessionToken.userName : false;
+   const email = typeof(app.config.sessionToken.email) == 'string' ? app.config.sessionToken.email : false;
 
-   if(userName){
+   if(email){
       // Fetch the user 
       const queryStringObject = {
-         username: userName
+         email: email
       }
 
       // Make the app call and obtain the user information
@@ -521,15 +521,14 @@ app.loadAccountEditData = () => {
             // Put the data into the form
             document.querySelector('#accountEdit1 .firstNameInput').value = responsePayload.firstName;
             document.querySelector('#accountEdit1 .lastNameInput').value = responsePayload.lastName;
-            document.querySelector('#accountEdit1 .emailInput').value = responsePayload.email;
             document.querySelector('#accountEdit1 .phoneInput').value = responsePayload.phone
             document.querySelector('#accountEdit1 .addressInput').value = responsePayload.address;
 
-            // Put the hidden username into both forms
-            const hiddenUserNameInputs = document.querySelectorAll('input.hiddenUserName');
+            // Put the hidden email into both forms
+            const hiddenUserNameInputs = document.querySelectorAll('input.hiddenemail');
 
             for(let i = 0; i < hiddenUserNameInputs.length; i++){
-               hiddenUserNameInputs[i].value = responsePayload.userName;
+               hiddenUserNameInputs[i].value = responsePayload.email;
             }
          } else {
             // If the request comes back with somrthing other than  200 we log the user out
@@ -547,14 +546,14 @@ app.loadAccountEditData = () => {
 // Load the order page
 
 app.loadShoppingCartPage = () => {
-   // Get the userName from the token
+   // Get the email from the token
 
-   const userName = typeof(app.config.sessionToken.userName) === 'string' ? app.config.sessionToken.userName : false;
+   const email = typeof(app.config.sessionToken.email) === 'string' ? app.config.sessionToken.email: false;
 
-   if(userName) {
+   if(email) {
       // fetch the user data
       const queryStringObject ={
-         username: userName
+         email: email
       }
 
       app.client.request(undefined, 'api/users', 'GET', queryStringObject, undefined, (statusCode, responsePayload) => {
