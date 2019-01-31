@@ -9,7 +9,7 @@ node index.js
 
 ## CLI
 
-The CLI allow the following:
+The CLI allows the following:
 
 1. View the list of commands by entering the command -'man' or -'help'.
 
@@ -163,7 +163,7 @@ NB please ensure token is valid
 
 NB please ensure token is valid 
 
- **http://localhost:3000/orders?ordername={order number}** via **GET**
+ **http://localhost:3000/orders?ordername={ordernumber}** via **GET**
 
 
 
