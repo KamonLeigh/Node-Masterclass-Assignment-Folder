@@ -137,7 +137,7 @@ cli.responders.help = () => {
          'list users': 'List all the registered users',
          'more info order -{ordernumber}':'Show details of the specifed order',
          'orders': 'list orders made in the last 24 hours',
-         'more info user --{username}': 'Show details of the specified user',
+         'more info user --{email}': 'Show details of the specified user',
          'exit':'Kill the cli (including the rest of the application)',
          'sign up':'List all the users who has signed up in the last 24 hours',
          'stats': 'Information about the hardware'
