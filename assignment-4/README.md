@@ -23,7 +23,7 @@ The CLI allows the following:
 
 6. To loopup specific order use the following command - 'more info order --{ordernumber}.
 
-7. To view all the users whoo signed up in the last 24 hours use the command -'sign up'.
+7. To view all the users who signed up in the last 24 hours use the command -'sign up'.
 
 8. To kill the cli use the following command - 'exit'.
 
@@ -42,6 +42,9 @@ that only user with the right token can edit etc ...
 
 
 ## Backend
+
+NB the API works with **https** protocol.
+
 ### /users
 
 #### Register a User 
@@ -67,7 +70,7 @@ payload will return tokenId along with expiry date which is a hour
 #### Obtain user information
 NB. You need to send token in order to sign in
 
- **http://localhost:3000/users?username={USERNAME}** via **GET**
+ **http://localhost:3000/users?username={userName}** via **GET**
 
 Along with username in querystring sent { token: tokenId } in header
 
@@ -91,7 +94,7 @@ Sent payload to **http(s):localhost:3000/users** via **PUT**
 
 #### Delete user 
 
- **http://localhost:3000/users?username={USERNAME}** via **DELETE**
+ **http://localhost:3000/users?username={userName}** via **DELETE**
 
 Along with username in querystring sent { token: tokenId } in header
 
@@ -117,7 +120,7 @@ Along with username in querystring sent { token: tokenId } in header
 
 #### Delete token
 
-**http://localhost:3000/tokens?id={token}** via **DETELE**
+**http://localhost:3000/tokens?id={tokenIgi}** via **DETELE**
 
 
 
@@ -134,7 +137,7 @@ NB please ensure token is valid
 
 #### Make order
 
- **http(s):localhost:3000/shoppingcart** via **PUT**
+ **http:localhost:3000/shoppingcart** via **PUT**
 
 
 ```
@@ -149,13 +152,13 @@ NB please ensure token is valid
 #### Review the order
 
 
- **http(s):localhost:3000/shoppingcart?ordernumber={order number}** via **GET**
+ **http:localhost:3000/shoppingcart?ordernumber={order number}** via **GET**
 
 
 
 #### delete the order
 
- **http(s):localhost:3000/shoppingcart?ordernumber={order number}** via **DELETE**
+ **http:localhost:3000/shoppingcart?ordernumber={order number}** via **DELETE**
 
 ### /orders
 
